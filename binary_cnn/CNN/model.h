@@ -31,7 +31,7 @@ class Model{
         Model(){}
 
         float Step_decay(float epoch){
-            float drop = 0.5;
+            float drop = 0.9;
             float epoch_drop = 1;
 
             float n_learning_rate = learning_rate*pow(drop, floor((1+epoch)/epoch_drop)); 
@@ -45,15 +45,12 @@ class Model{
             this->num_of_batches = input.size.m / batch_size ;
             this->learning_rate = lr;
 
-            cout<<"flag1";
             cout<<"Total images: " << input.size.m<<endl;
             cout<<"batch_size: " << batch_size<<endl;
 
             // tensor_t<float> input_batch = input.get_batch(batch_size, 0);
             // tensor_t<float> output_batch = output.get_batch(batch_size, 0);
-            cout<<"epochs "<<epochs<<endl;
             for ( int epoch = 0; epoch < epochs; ++epoch){
-    cout<<"flag2";
                 for(int batch_num = 0; batch_num<num_of_batches; batch_num++)
                 {
                     auto start = std::chrono::high_resolution_clock::now();
@@ -93,9 +90,13 @@ class Model{
                         // std::cout << "Elapsed time: " << elapsed.count() << " s\n";
                      }
                     
-            
-                    float n_lr = Step_decay(epoch);
+                    float n_lr;
 
+                    if(lr_schedule == "Step_decay")
+                      n_lr = Step_decay(epoch);
+                    else 
+                        n_lr = learning_rate;
+                        
                     // Update weights
                     for ( int i = 0; i < layers.size(); i++ )
                         fix_weights( layers[i], n_lr);

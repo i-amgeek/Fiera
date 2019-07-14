@@ -1,0 +1,114 @@
+#pragma once
+#include <math.h>
+#include <float.h>
+#include <string.h>
+#include "layer_t.h"
+#include "tensor.hpp"
+#include "optimization_method.h"
+#include "gradient_t.h"
+
+#pragma pack(push, 1)
+struct fc_layer_t
+{
+	layer_type type = layer_type::fc;
+    tensorf_2d in;
+	tensorf_2d weights;
+	tensorg_2d weights_grad;
+	tdsize in_size, out_size;
+	bool train = false;
+	bool debug, clip_gradients_flag;
+
+	fc_layer_t( tdsize in_size, tdsize out_size,  bool clip_gradients_flag=false, bool debug_flag = false )
+		:
+		weights = xt::random::rand({out_size.x, in_size.x*in_size.y*in_size.z }, -1, 1)
+	{
+		this->in_size = in_size;
+		this->out_size = out_size;
+		this->debug = debug_flag;
+		this->clip_gradients_flag = clip_gradients_flag;
+	}
+
+	tensor_2d activate( tensor_2d in, bool train )
+	{
+		if ( train ) this->in = in;  	// Only save `in` while training to save RAM during inference
+		tensor_2d out = linalg::dot(in, transpose(this->weights))
+		return out;
+	}
+
+	void fix_weights(float learning_rate)
+	{
+		update_weight( weights );
+		update_gradients( grad );
+		// if(debug)
+		// {
+		// 	cout<<"*******new weights for float fc*****\n";
+		// 	print_tensor(weights);
+		// }
+	}
+
+	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
+	
+	// Calculates backward propogation and saves result in `grads_in`. 
+	{
+
+		weights_grad = linalg::dot(grads_next_layer, transpose(in));
+		grads_in = linalg::dot(transpose(weights), grads_next_layer);
+		// if(debug)
+		// {
+		// 	cout<<"**********grads_in for float fc***********\n";
+		// 	print_tensor(grads_in);
+		// }
+		return grads_in;	
+
+	}
+	
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "fc" },
+			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
+			{ "out_size", {out_size.m, out_size.x, out_size.y, out_size.z} },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
+	}
+
+	void save_layer_weight( string fileName ){
+		vector<float> data;
+		int m = weights.size.m;
+		int x = weights.size.x;
+		int y = weights.size.y;
+		int z = weights.size.z;
+		int array_size = m * x * y * z;
+		for ( int i = 0; i < array_size; i++ )
+			data.push_back(weights.data[i]);
+
+		ofstream file(fileName);
+		json weight = { 
+			{ "type", "fc" },
+			{ "size", array_size },
+			{ "data", data}
+		};
+		file << weight << endl;
+		file.close();
+	}
+
+	void load_layer_weight(string fileName){
+		ifstream file(fileName);
+		json weight;
+		file >> weight;
+		assert(weight["type"] == "fc");
+		vector<float> data = weight["data"];
+		int size  = weight["size"];
+		for (int i = 0; i < size; i++)
+			this->weights.data[i] = data[i];
+		file.close();
+	}
+
+	void print_layer(){
+		cout << "\n\n FC Layer : \t";
+		cout << "\n\t in_size:\t";
+		print_tensor_size(in_size);
+		cout << "\n\t out_size:\t";
+		print_tensor_size(out_size);
+	}
+};
+#pragma pack(pop)

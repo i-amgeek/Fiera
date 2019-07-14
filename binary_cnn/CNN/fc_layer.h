@@ -3,6 +3,7 @@
 #include <float.h>
 #include <string.h>
 #include "layer_t.h"
+#include "tensor.hpp"
 #include "optimization_method.h"
 #include "gradient_t.h"
 

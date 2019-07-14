@@ -34,4 +34,13 @@ struct gradient_t
 		clone.oldgrad *= num;
 		return clone;
 	}
+
+	gradient_t operator-( float num )
+	{
+		gradient_t clone( *this );
+		clone.grad -= num;
+		clone.oldgrad -= num;
+		return clone;
+	}
+
 };

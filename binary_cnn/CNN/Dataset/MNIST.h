@@ -4,7 +4,7 @@
 #include <fstream>
 
 // #include "../model.h"
-uint8_t* read_file( const char* szFile )
+uint8_t* read_file( string szFile )
 {
 	ifstream file( szFile, ios::binary | ios::ate );
     streamsize size = file.tellg();
@@ -22,8 +22,19 @@ uint8_t* read_file( const char* szFile )
 
 Dataset read_test_cases(float ptrain, float ptest, float pval)
 {
-	uint8_t* train_image = read_file( "../../CNN/Dataset/MNIST/train-images.idx3-ubyte" );
-	uint8_t* train_labels = read_file( "../../CNN/Dataset/MNIST/train-labels.idx1-ubyte" );
+    string PATH="../../CNN/Dataset/MNIST/";
+
+    // #ifdef using_cmake
+    PATH="../CNN/Dataset/MNIST/";
+    // #endif
+
+    string image_path = (string) PATH + "train-images.idx3-ubyte";
+    string labels_path = (string) PATH + "train-labels.idx1-ubyte";
+    uint8_t* train_image = read_file( image_path );
+    uint8_t* train_labels = read_file( labels_path );
+
+//	uint8_t* train_image = read_file( "../../CNN/Dataset/MNIST/train-images.idx3-ubyte" );
+//	uint8_t* train_labels = read_file( "../../CNN/Dataset/MNIST/train-labels.idx1-ubyte" );
 	
     // uint32_t case_count = 60000;
     // cout<<(*(uint8_t*)(train_image));

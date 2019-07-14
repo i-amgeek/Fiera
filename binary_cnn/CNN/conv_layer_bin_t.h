@@ -157,6 +157,9 @@ struct conv_layer_bin_t
 				}
 			}
 
+			cout<<"tensor_t: \n";
+			print_tensor(packed_weight);
+
 			// return pack;
 	}
 
