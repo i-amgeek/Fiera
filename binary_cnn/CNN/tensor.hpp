@@ -13,10 +13,10 @@ using namespace xt;
 using namespace std;
 
 using Clock = std::chrono::high_resolution_clock;
-using tensorf_1d = xtensor<float, 1>;
-using tensorf_2d = xtensor<float, 2>;
-using tensorf_3d = xtensor<float, 3>;
-using tensorf_4d = xtensor<float, 4>;
+using tensor_1d = xtensor<float, 1>;
+using tensor_2d = xtensor<float, 2>;
+using tensor_3d = xtensor<float, 3>;
+using tensor_4d = xtensor<float, 4>;
 
 
 using tensorg_1d = xtensor<gradient_t, 1>;

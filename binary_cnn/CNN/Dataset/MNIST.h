@@ -22,11 +22,13 @@ uint8_t* read_file( string szFile )
 
 Dataset read_test_cases(float ptrain, float ptest, float pval)
 {
+    // cout<<"flag3\n";
+
     string PATH="../../CNN/Dataset/MNIST/";
 
-    // #ifdef using_cmake
+    #ifdef using_cmake
     PATH="../CNN/Dataset/MNIST/";
-    // #endif
+    #endif
 
     string image_path = (string) PATH + "train-images.idx3-ubyte";
     string labels_path = (string) PATH + "train-labels.idx1-ubyte";

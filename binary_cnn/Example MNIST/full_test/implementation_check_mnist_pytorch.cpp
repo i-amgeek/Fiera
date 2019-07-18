@@ -1,6 +1,6 @@
 #include "../../CNN/model.h"
-#include <Dataset/MNIST.h>
-#include<Dataset.h>
+#include "../../CNN/Dataset/MNIST.h"
+#include"../../CNN/Dataset.h"
 
 int main()
 {
@@ -66,7 +66,10 @@ int main()
     PATH="../Example\\ MNIST/full_test/trained_models/big_binary_mnist_64x";
     #endif
 
+
+
     Dataset data = load_mnist(90,10,0);
+            cout<<"flag2\n";
     // model.load("PATH");
 
     for(int ep = 0; ep<10; ep++){

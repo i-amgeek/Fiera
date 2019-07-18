@@ -1,35 +1,17 @@
-#include <cassert>
-#include <cstdint>
-#include <cstdio>
 #include <iostream>
-#include <fstream>
-#include <algorithm>
-#include "byteswap.h"
-#include "../../CNN/cnn.h"
+#include "xtensor/xarray.hpp"
+#include "xtensor/xmath.hpp"
+#include "xtensor/xio.hpp"
 
-using namespace std;
-
-int main()
+int main(int argc, char* argv[])
 {
-    tensor_t<float> temp_in(2, 2, 2, 2), weights(2 * 2 * 2, 4, 1, 1), expected_output(2, 4, 1, 1);
-    std::vector<std::vector<std::vector<std::vector<float> > > > vect=
+    xt::xarray<double> arr1
+      {1.0, 2.0, 3.0};
 
-        {{{{0.0000, 0.0000},
-          {0.3510, 0.5182}},
+    xt::xarray<unsigned int> arr2
+      {4, 5, 6, 7};
 
-         {{0.0000, 0.0000},
-          {0.0000, 0.4201}}},
-
-
-        {{{0.0000, 0.3114},
-          {0.0000, 0.0000}},
-
-         {{0.0045, 0.2879},
-          {0.4376, 0.1286}}}};
-
-    temp_in.from_vector(vect);
-
-    vect = 
+     xt::xarray weights = 
         {{{{ 0.1558,  0.0148,  0.0896,  0.170}}},
         {{{-0.3019,  0.0659,  0.0488, -0.1747}}},
         {{{ 0.3323,  0.2685,  0.1723, -0.1887}}},
@@ -39,22 +21,14 @@ int main()
         {{{ 0.1819,  0.2517, -0.0890, -0.0612}}},
         {{{ 0.1378,  0.1217, -0.2155, -0.0456}}}};
 
-    weights.from_vector(vect);
+    // arr2.reshape({4, 1});
 
-    vect =
-       {{{{ 0.0308,  0.1925,  0.1382,  0.0727}}},
-        {{{-0.0132,  0.0684, -0.1085, -0.0739}}}};
+   auto shape = weights.shape();
 
-    expected_output.from_vector(vect);
+   for (auto& el : shape) {std::cout << el << ", "; }
 
-    fc_layer_bin_t * layer = new fc_layer_bin_t( {2, 2, 2, 2}, 4, false);
-    layer->in = temp_in;
-    layer->weights = weights;
-    layer->activate(temp_in, 1);
-    cout << "\nExpected output is\n";
-    print_tensor(expected_output);
-    cout << "\nActual output is\n";
-    print_tensor(layer->out);
+    // xt::xarray<double> res = xt::pow(arr1, arr2);
 
+    // std::cout << res;
     return 0;
-    }
+}

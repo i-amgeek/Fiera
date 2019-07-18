@@ -17,6 +17,18 @@ static float update_weight( float &w, gradient_t& grad, float multp, bool clip, 
 
 }
 
+void update_weight( tensor_2d& weights, tensorg_2d weights_grad ){
+	int h = weights.shape()[0];
+	int w = weights.shape()[1];
+
+	for (int i=0; i<h; i++)
+		for (int j=0; j<w; j++){
+			gradient_t& grad = weights_grad(i,j);
+			float m = grad.grad + grad.oldgrad * MOMENTUM;
+			weights(i,j) -= learning_rate * m * multp + learning_rate * WEIGHT_DECAY * w;
+		}
+}
+
 static void update_gradient( gradient_t& grad )
 {
 	grad.oldgrad = (grad.grad + grad.oldgrad * MOMENTUM);

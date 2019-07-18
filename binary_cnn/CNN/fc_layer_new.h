@@ -11,17 +11,16 @@
 struct fc_layer_t
 {
 	layer_type type = layer_type::fc;
-    tensorf_2d in;
-	tensorf_2d weights;
+    tensor_2d in;
+	tensor_2d weights;
 	tensorg_2d weights_grad;
 	tdsize in_size, out_size;
 	bool train = false;
 	bool debug, clip_gradients_flag;
 
 	fc_layer_t( tdsize in_size, tdsize out_size,  bool clip_gradients_flag=false, bool debug_flag = false )
-		:
-		weights = xt::random::rand({out_size.x, in_size.x*in_size.y*in_size.z }, -1, 1)
 	{
+		this->weights = eval(xt::random::rand({out_size.x, in_size.x }, -1, 1));
 		this->in_size = in_size;
 		this->out_size = out_size;
 		this->debug = debug_flag;
@@ -37,8 +36,8 @@ struct fc_layer_t
 
 	void fix_weights(float learning_rate)
 	{
-		update_weight( weights );
-		update_gradients( grad );
+		update_weight( weights, weights_grad, 1, false, learning_rate );
+		update_gradients( weights_grad );
 		// if(debug)
 		// {
 		// 	cout<<"*******new weights for float fc*****\n";
@@ -46,13 +45,13 @@ struct fc_layer_t
 		// }
 	}
 
-	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
+	tensor_2d calc_grads( tensor_2d& grad_next_layer )
 	
 	// Calculates backward propogation and saves result in `grads_in`. 
 	{
 
-		weights_grad = linalg::dot(grads_next_layer, transpose(in));
-		grads_in = linalg::dot(transpose(weights), grads_next_layer);
+		weights_grad = linalg::dot(transpose(grads_next_layer), in);
+		tensor_2d grads_in = linalg::dot(grads_next_layer, weights );
 		// if(debug)
 		// {
 		// 	cout<<"**********grads_in for float fc***********\n";

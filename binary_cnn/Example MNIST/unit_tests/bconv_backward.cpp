@@ -4,8 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include "byteswap.h"
-#include "../../CNN/cnn.h"
+// #include byteswap.h>
+#include <cnn.h>
 
 using namespace std;
 
@@ -90,10 +90,12 @@ int main()
     cout<<"**********filters weights************\n";
     print_tensor(layer->filters);
     
-    // tensor_t<float> out;
+    tensor_t<float> out;
 
-    layer->activate(temp_in, true);
+   out = layer->activate(temp_in, true);
 
+  cout<<"out: \n";
+  print_tensor(out);
 
     tensor_t<float> grads_in;
     

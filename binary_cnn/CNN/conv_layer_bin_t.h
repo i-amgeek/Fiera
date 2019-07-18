@@ -128,10 +128,11 @@ struct conv_layer_bin_t
 
 							for(int zz = z; zz<z+64; zz++)
 								bits[zz-z] = in(i,j,k,zz) >= 0;
-
-								static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
-									"bits.to_ullong() must return a 64-bit element");
-								packed_input(i,j,k,z/64) = bits.to_ullong();
+							
+								// cout<<endl;
+							static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
+								"bits.to_ullong() must return a 64-bit element");
+							packed_input(i,j,k,z/64) = bits.to_ullong();
 						}
 					}
 				}
@@ -157,8 +158,8 @@ struct conv_layer_bin_t
 				}
 			}
 
-			cout<<"tensor_t: \n";
-			print_tensor(packed_weight);
+			// cout<<"tensor_t: \n";
+			// print_tensor(packed_weight);
 
 			// return pack;
 	}
@@ -329,11 +330,12 @@ struct conv_layer_bin_t
         tensor_bin_t in_bin = binarize(in);
 		
 		//initialize alpha and calculate in_bin2
-        tensor_bin_t in_bin2 = calculate_alpha(in, in_bin);
+        // tensor_bin_t in_bin2 = calculate_alpha(in, in_bin);
 		
-		tensor_t<float> al_b = 	calculate_al_b(in_bin, in_bin2);
+		// tensor_t<float> al_b = 	calculate_al_b(in_bin, in_bin2);
 
-		if(train) this->al_b = al_b;
+		this->al_b = calculate_al_b_first_bn(in);
+		// if(train) this->al_b = al_b;
 		
 		//calculating binary convolution
         // #pragma omp parallel for private(example, filter,x, y,i,sum) num_threads(25)
@@ -350,9 +352,9 @@ struct conv_layer_bin_t
 								{
 									bool f = filters_bin.data[filters_bin(filter, i, j, z )];
 									bool v = in_bin.data[in_bin(example, mapped.x + i, mapped.y + j, z )];
-									bool v2 = in_bin2.data[in_bin2(example, mapped.x + i, mapped.y + j, z)];
+									// bool v2 = in_bin2.data[in_bin2(example, mapped.x + i, mapped.y + j, z)];
 									sum += (!(f^v));
-									sum2 += (!(f^v2));
+									// sum2 += (!(f^v2));
 								}
 						out(example, x, y, filter ) = (2*sum - extend_filter*extend_filter*in.size.z);
 						
@@ -371,12 +373,12 @@ struct conv_layer_bin_t
 
 	tensor_t<float> activate(tensor_t<float> in, bool train = false){
 		
+		auto start = std::chrono::high_resolution_clock::now();
+
+		if (train) this->in = in;
 		this->al_b = calculate_al_b_first_bn(in);
 		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
 		
-		// auto start = std::chrono::high_resolution_clock::now();
-		
-
 		// if(in.size.z % 128==0){
 		// 	packed_var<uint128_t> pack;
 		// 	pack = bitpack_128(in, 128);
@@ -426,9 +428,9 @@ struct conv_layer_bin_t
 					}
 		}
 		
-		// auto finish = std::chrono::high_resolution_clock::now();
-		// std::chrono::duration<double> elapsed = finish - start;
-		// std::cout << "New binarized time: " << elapsed.count() << " s\n";
+		auto finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+		std::cout << "New binarized time: " << elapsed.count() << " s\n";
 
 		return out;
 

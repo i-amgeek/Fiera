@@ -40,15 +40,17 @@ class Model{
         void train( tensor_t<float> input, tensor_t<float> output, int batch_size, int epochs=1, float lr = 0.02, string optimizer="Momentum", string lr_schedule = "Step_decay", bool debug=false ){
         //TODO: Check layers are not empty
         
+            
             this->epochs += epochs;
             this->batch_size = batch_size;
             this->num_of_batches = input.size.m / batch_size ;
             this->learning_rate = lr;
 
+
             cout<<"Total images: " << input.size.m<<endl;
             cout<<"batch_size: " << batch_size<<endl;
 
-            // tensor_t<float> input_batch = input.get_batch(batch_size, 0);
+            // tensor_t<float> input_batch =" input.get_batch(batch_size, 0);
             // tensor_t<float> output_batch = output.get_batch(batch_size, 0);
             for ( int epoch = 0; epoch < epochs; ++epoch){
                 for(int batch_num = 0; batch_num<num_of_batches; batch_num++)
