@@ -43,4 +43,9 @@ struct gradient_t
 		return clone;
 	}
 
+	gradient_t operator=( float num)
+	{
+		this->grad = num;
+	}
+
 };

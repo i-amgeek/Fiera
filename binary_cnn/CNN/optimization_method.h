@@ -1,5 +1,6 @@
 #pragma once
 #include "gradient_t.h"
+#include "tensor.hpp"
 
 #define MOMENTUM 0.6
 #define WEIGHT_DECAY 0.000
@@ -17,7 +18,7 @@ static float update_weight( float &w, gradient_t& grad, float multp, bool clip, 
 
 }
 
-void update_weight( tensor_2d& weights, tensorg_2d weights_grad ){
+void update_weight( tensor_2d& weights, tensorg_2d weights_grad, float multp, bool clip, float learning_rate ){
 	int h = weights.shape()[0];
 	int w = weights.shape()[1];
 
@@ -32,6 +33,18 @@ void update_weight( tensor_2d& weights, tensorg_2d weights_grad ){
 static void update_gradient( gradient_t& grad )
 {
 	grad.oldgrad = (grad.grad + grad.oldgrad * MOMENTUM);
+}
+
+static void update_gradient( tensorg_2d weights_grad){
+
+	int h = weights_grad.shape()[0];
+	int w = weights_grad.shape()[1];
+
+	for (int i=0; i<h; i++)
+		for (int j=0; j<w; j++){
+			gradient_t &w = weights_grad(i, j);
+			w.oldgrad = w.grad + w.oldgrad * MOMENTUM;
+		}
 }
 
 void clip_gradients(bool chk, float & gradient_value){

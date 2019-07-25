@@ -99,7 +99,7 @@ struct conv_layer_t
 	tensor_t<float> activate(tensor_t<float>& in, bool train)
 	{
 		
-
+		auto start = Clock::now();
 		if (train) this->in = in;
 
 		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
@@ -134,139 +134,142 @@ struct conv_layer_t
 		// 	print_tensor(out);
 		// }
 		
+        auto finish = Clock::now();
+		std::chrono::duration<double> elipsed = finish - start;
+		cout << "Elipsed: "<< elipsed.count() << "s\n";
 
 		return out;
 	}
 
-	void fix_weights(float learning_rate)
-	{
+	// void fix_weights(float learning_rate)
+	// {
 
-		for ( int a = 0; a < filters.size.m; a++ )
-			for ( int i = 0; i < extend_filter; i++ )
-				for ( int j = 0; j < extend_filter; j++ )
-					for ( int z = 0; z < in_size.z; z++ )
-					{
-						float& w = filters(a, i, j, z );
-						gradient_t& grad = filter_grads(a, i, j, z );
-						// grad.grad /= in.size.m;    	Pytorch updates weights by adding gradients of all examples not taking their mean
-						w = update_weight( w, grad,1,false,learning_rate);
-						update_gradient( grad );
-					}
-		// if(debug)
-		// {
-		// 	cout<<"*******new weights for float conv*****\n";
-		// 	print_tensor(filters);
-		// }
+	// 	for ( int a = 0; a < filters.size.m; a++ )
+	// 		for ( int i = 0; i < extend_filter; i++ )
+	// 			for ( int j = 0; j < extend_filter; j++ )
+	// 				for ( int z = 0; z < in_size.z; z++ )
+	// 				{
+	// 					float& w = filters(a, i, j, z );
+	// 					gradient_t& grad = filter_grads(a, i, j, z );
+	// 					// grad.grad /= in.size.m;    	Pytorch updates weights by adding gradients of all examples not taking their mean
+	// 					w = update_weight( w, grad,1,false,learning_rate);
+	// 					update_gradient( grad );
+	// 				}
+	// 	// if(debug)
+	// 	// {
+	// 	// 	cout<<"*******new weights for float conv*****\n";
+	// 	// 	print_tensor(filters);
+	// 	// }
 		
-	}
+	// }
 
-	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
-	{
-		assert(in.size > 0);
-		tensor_t<float> grads_in( grad_next_layer.size.m, in_size.x, in_size.y, in_size.z );
-		for ( int k = 0; k < filter_grads.size.m; k++ )
-		{
-			for ( int i = 0; i < extend_filter; i++ )
-				for ( int j = 0; j < extend_filter; j++ )
-					for ( int z = 0; z < in.size.z; z++ )
-						filter_grads(k, i, j, z ).grad = 0;
-		}
+	// tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
+	// {
+	// 	assert(in.size > 0);
+	// 	tensor_t<float> grads_in( grad_next_layer.size.m, in_size.x, in_size.y, in_size.z );
+	// 	for ( int k = 0; k < filter_grads.size.m; k++ )
+	// 	{
+	// 		for ( int i = 0; i < extend_filter; i++ )
+	// 			for ( int j = 0; j < extend_filter; j++ )
+	// 				for ( int z = 0; z < in.size.z; z++ )
+	// 					filter_grads(k, i, j, z ).grad = 0;
+	// 	}
 		
-		for(int e=0; e < in.size.m; e++){
-			for ( int x = 0; x < in.size.x; x++ )
-			{
-				for ( int y = 0; y < in.size.y; y++ )
-				{
-					range_t rn = map_to_output( x, y );
-					for ( int z = 0; z < in.size.z; z++ )
-					{
-						float sum_error = 0;
-						for ( int i = rn.min_x; i <= rn.max_x; i++ )
-						{
-							int minx = i * stride;
-							for ( int j = rn.min_y; j <= rn.max_y; j++ )
-							{
-								int miny = j * stride;
-								for ( int k = rn.min_z; k <= rn.max_z; k++ )
-								{
-									float w_applied = filters(k, x - minx, y - miny, z );
-									sum_error += w_applied * grad_next_layer(e, i, j, k );
-									filter_grads(k, x - minx, y - miny, z ).grad += in(e, x, y, z ) * grad_next_layer(e, i, j, k );
-									// clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
-								}
-							}
-						}
-						grads_in(e, x, y, z ) = sum_error;
-						// clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
-					}
-					}
-			}
-		}
+	// 	for(int e=0; e < in.size.m; e++){
+	// 		for ( int x = 0; x < in.size.x; x++ )
+	// 		{
+	// 			for ( int y = 0; y < in.size.y; y++ )
+	// 			{
+	// 				range_t rn = map_to_output( x, y );
+	// 				for ( int z = 0; z < in.size.z; z++ )
+	// 				{
+	// 					float sum_error = 0;
+	// 					for ( int i = rn.min_x; i <= rn.max_x; i++ )
+	// 					{
+	// 						int minx = i * stride;
+	// 						for ( int j = rn.min_y; j <= rn.max_y; j++ )
+	// 						{
+	// 							int miny = j * stride;
+	// 							for ( int k = rn.min_z; k <= rn.max_z; k++ )
+	// 							{
+	// 								float w_applied = filters(k, x - minx, y - miny, z );
+	// 								sum_error += w_applied * grad_next_layer(e, i, j, k );
+	// 								filter_grads(k, x - minx, y - miny, z ).grad += in(e, x, y, z ) * grad_next_layer(e, i, j, k );
+	// 								// clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
+	// 							}
+	// 						}
+	// 					}
+	// 					grads_in(e, x, y, z ) = sum_error;
+	// 					// clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
+	// 				}
+	// 				}
+	// 		}
+	// 	}
 		
-		// if(debug)
-		// {
-		// 	cout<<"*************grads filter**********\n";
-		// 	print_tensor(filter_grads);
+	// 	// if(debug)
+	// 	// {
+	// 	// 	cout<<"*************grads filter**********\n";
+	// 	// 	print_tensor(filter_grads);
 
-		// 	cout<<"*********grads_in for float conv********\n";
-		// 	print_tensor(grads_in);
-		// }
+	// 	// 	cout<<"*********grads_in for float conv********\n";
+	// 	// 	print_tensor(grads_in);
+	// 	// }
 
-		return grads_in;
-	}
+	// 	return grads_in;
+	// }
 
-	void save_layer( json& model ){
-		model["layers"].push_back( {
-			{ "layer_type", "conv" },
-			{ "stride", stride },
-			{ "extend_filter", extend_filter },
-			{ "number_filters", filters.size.m },
-			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
-			{ "clip_gradients", clip_gradients_flag}
-		} );
-	}
+	// void save_layer( json& model ){
+	// 	model["layers"].push_back( {
+	// 		{ "layer_type", "conv" },
+	// 		{ "stride", stride },
+	// 		{ "extend_filter", extend_filter },
+	// 		{ "number_filters", filters.size.m },
+	// 		{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
+	// 		{ "clip_gradients", clip_gradients_flag}
+	// 	} );
+	// }
 
-	void save_layer_weight( string fileName ){
-		ofstream file(fileName);
-		int m = filters.size.m;
-		int x = filters.size.x;
-		int y = filters.size.y;
-		int z = filters.size.z;
-		int array_size = m*x*y*z;
+	// void save_layer_weight( string fileName ){
+	// 	ofstream file(fileName);
+	// 	int m = filters.size.m;
+	// 	int x = filters.size.x;
+	// 	int y = filters.size.y;
+	// 	int z = filters.size.z;
+	// 	int array_size = m*x*y*z;
 		
-		vector<float> data;
-		for ( int i = 0; i < array_size; i++ )
-			data.push_back(filters.data[i]);	
-		json weights = { 
-			{ "type", "conv" },
-			{ "size", array_size},
-			{ "data", data}
-		};
-		file << weights << endl;
-		file.close();
-	}
+	// 	vector<float> data;
+	// 	for ( int i = 0; i < array_size; i++ )
+	// 		data.push_back(filters.data[i]);	
+	// 	json weights = { 
+	// 		{ "type", "conv" },
+	// 		{ "size", array_size},
+	// 		{ "data", data}
+	// 	};
+	// 	file << weights << endl;
+	// 	file.close();
+	// }
 
-	void load_layer_weight(string fileName){
-		ifstream file(fileName);
-		json weights;
-		file >> weights;
-		assert(weights["type"] == "conv");
-		vector<float> data = weights["data"];
-		int size  = weights["size"];
-		for (int i = 0; i < size; i++)
-			this->filters.data[i] = data[i];
-		file.close();
-	}
+	// void load_layer_weight(string fileName){
+	// 	ifstream file(fileName);
+	// 	json weights;
+	// 	file >> weights;
+	// 	assert(weights["type"] == "conv");
+	// 	vector<float> data = weights["data"];
+	// 	int size  = weights["size"];
+	// 	for (int i = 0; i < size; i++)
+	// 		this->filters.data[i] = data[i];
+	// 	file.close();
+	// }
 
-	void print_layer(){
-		cout << "\n\n Conv Layer : \t";
-		cout << "\n\t in_size:\t";
-		print_tensor_size(in_size);
-		cout << "\n\t Filter Size:\t";
-		print_tensor_size(filters.size);
-		cout << "\n\t out_size:\t";
-		print_tensor_size(out_size);
-	}
+	// void print_layer(){
+	// 	cout << "\n\n Conv Layer : \t";
+	// 	cout << "\n\t in_size:\t";
+	// 	print_tensor_size(in_size);
+	// 	cout << "\n\t Filter Size:\t";
+	// 	print_tensor_size(filters.size);
+	// 	cout << "\n\t out_size:\t";
+	// 	print_tensor_size(out_size);
+	// }
 };
 #pragma pack(pop)
 		

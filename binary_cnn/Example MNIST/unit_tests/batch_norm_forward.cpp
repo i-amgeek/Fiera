@@ -5,14 +5,15 @@
 #include <fstream>
 #include <algorithm>
 #include "byteswap.h"
-#include "../../CNN/cnn.h"
+#include "../../CNN/batch_norm_layer_t.h"
+#include "tensor.hpp"
 
 using namespace std;
 
 int main()
 {
     tensor_t<float> in(2, 2, 2, 2), actual_output(2, 2, 2, 2), expected_output(2, 2, 2, 2);
-    vector<float> gamma = {0.0731,0.7204}, beta = {0,0};
+    vector<float> gamma = {0.7204, 0.0731}, beta = {0,0};
     float epsilon;
 
     std::vector<std::vector<std::vector<std::vector<float> > > > vect=

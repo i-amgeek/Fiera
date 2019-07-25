@@ -106,143 +106,143 @@ struct batch_norm_layer_t
     }
 	
 	
-	void fix_weights(float learning_rate){
+	// void fix_weights(float learning_rate){
 		
-		for(int z=0; z<in_size.z; z++){
-			beta[z] = update_weight(beta[z],grads_beta[z],1,false, learning_rate);
-			update_gradient(grads_beta[z]);
-			gamma[z] = update_weight(gamma[z],grads_gamma[z],1,false, learning_rate);
-			update_gradient(grads_gamma[z]);
-		}
-	}
+	// 	for(int z=0; z<in_size.z; z++){
+	// 		beta[z] = update_weight(beta[z],grads_beta[z],1,false, learning_rate);
+	// 		update_gradient(grads_beta[z]);
+	// 		gamma[z] = update_weight(gamma[z],grads_gamma[z],1,false, learning_rate);
+	// 		update_gradient(grads_gamma[z]);
+	// 	}
+	// }
 
-	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer)
-	{
-		// fill(grads_beta.begin(), grads_beta.end(), 0);
-		// fill(grads_gamma.begin(), grads_gamma.end(), 0);
-		assert(in.size > 0); 
+	// tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer)
+	// {
+	// 	// fill(grads_beta.begin(), grads_beta.end(), 0);
+	// 	// fill(grads_gamma.begin(), grads_gamma.end(), 0);
+	// 	assert(in.size > 0); 
 
-		tensor_t <float> grads_xmu1(grad_next_layer.size.m, in_size.x,in_size.y, in_size.z),
-      		grads_xmu2(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z),
-      		grads_x1(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z),
-      		grads_in(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z),
-      		grads_in_hat(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z);
+	// 	tensor_t <float> grads_xmu1(grad_next_layer.size.m, in_size.x,in_size.y, in_size.z),
+    //   		grads_xmu2(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z),
+    //   		grads_x1(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z),
+    //   		grads_in(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z),
+    //   		grads_in_hat(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z);
 
-		vector<float> grads_sqrtvar,grads_var,grads_u_mean;
-    	vector<float> grads_sigma, grads_mean;
+	// 	vector<float> grads_sqrtvar,grads_var,grads_u_mean;
+    // 	vector<float> grads_sigma, grads_mean;
 
-		grads_gamma.resize(in_size.z);
-		grads_beta.resize(in_size.z);
+	// 	grads_gamma.resize(in_size.z);
+	// 	grads_beta.resize(in_size.z);
 
-		grads_sqrtvar.resize(in_size.z);
-		grads_var.resize(in_size.z);
-		grads_u_mean.resize(in_size.z);
-		grads_sigma.resize(in_size.z);
-		grads_mean.resize(in_size.z);
+	// 	grads_sqrtvar.resize(in_size.z);
+	// 	grads_var.resize(in_size.z);
+	// 	grads_u_mean.resize(in_size.z);
+	// 	grads_sigma.resize(in_size.z);
+	// 	grads_mean.resize(in_size.z);
 
-		for(int z=0; z<in_size.z; z++){
-			float sum = 0;
-			for(int e=0; e<grad_next_layer.size.m; e++){
-				for(int k=0; k<in_size.x; k++){
-					for(int j=0; j<in_size.y; j++){
-						sum += grad_next_layer(e,k,j,z);
-					}
-				}
-			}
-			grads_beta[z].grad = sum;	
-		}
+	// 	for(int z=0; z<in_size.z; z++){
+	// 		float sum = 0;
+	// 		for(int e=0; e<grad_next_layer.size.m; e++){
+	// 			for(int k=0; k<in_size.x; k++){
+	// 				for(int j=0; j<in_size.y; j++){
+	// 					sum += grad_next_layer(e,k,j,z);
+	// 				}
+	// 			}
+	// 		}
+	// 		grads_beta[z].grad = sum;	
+	// 	}
 
-		for(int z=0; z<in_size.z; z++){
-			float sum = 0;
-			float sum1 = 0;
-			for(int e=0; e<grad_next_layer.size.m; e++){
-				for(int k=0; k<in_size.x; k++){
-					for(int j=0; j<in_size.y; j++){
-						sum += in_hat(e,k,j,z) * grad_next_layer(e,k,j,z);
-						grads_in_hat(e,k,j,z) = grad_next_layer(e,k,j,z)*gamma[z]; 
-						sum1 += grads_in_hat(e,k,j,z)*(in(e,k,j,z) - u_mean[z]); 
-						grads_xmu1(e,k,j,z) = grad_next_layer(e,k,j,z) * (gamma[z]) /sqrt(epsilon+sigma[z]); 
-					}
-				}
-			}	
-			grads_gamma[z].grad = sum;
-			// grads_ivar[z] = sum1;
-			grads_sqrtvar[z] = -1*sum1/(epsilon+sigma[z]);
-			grads_var[z] = 0.5 * (grads_sqrtvar[z]/sqrt(epsilon+sigma[z]));
-		}
+	// 	for(int z=0; z<in_size.z; z++){
+	// 		float sum = 0;
+	// 		float sum1 = 0;
+	// 		for(int e=0; e<grad_next_layer.size.m; e++){
+	// 			for(int k=0; k<in_size.x; k++){
+	// 				for(int j=0; j<in_size.y; j++){
+	// 					sum += in_hat(e,k,j,z) * grad_next_layer(e,k,j,z);
+	// 					grads_in_hat(e,k,j,z) = grad_next_layer(e,k,j,z)*gamma[z]; 
+	// 					sum1 += grads_in_hat(e,k,j,z)*(in(e,k,j,z) - u_mean[z]); 
+	// 					grads_xmu1(e,k,j,z) = grad_next_layer(e,k,j,z) * (gamma[z]) /sqrt(epsilon+sigma[z]); 
+	// 				}
+	// 			}
+	// 		}	
+	// 		grads_gamma[z].grad = sum;
+	// 		// grads_ivar[z] = sum1;
+	// 		grads_sqrtvar[z] = -1*sum1/(epsilon+sigma[z]);
+	// 		grads_var[z] = 0.5 * (grads_sqrtvar[z]/sqrt(epsilon+sigma[z]));
+	// 	}
 		
-		for(int z = 0; z<in_size.z; z++){
-			float sum = 0;
-			for(int e=0; e<grad_next_layer.size.m; e++){
-				for(int k=0; k<in_size.x; k++){
-					for(int j=0; j<in_size.y; j++){
-						// grads_xmu2(e,k,j,z) = (1.0/out.size.m)*grads_var[z]*2*(in(e,k,j,z) - u_mean[z]);
-						grads_xmu2(e,k,j,z) = (grads_var[z]*2*(in(e,k,j,z) - u_mean[z]))/(out.size.m*out.size.x*out.size.y);
-						grads_x1(e,k,j,z) = grads_xmu1(e,k,j,z) + grads_xmu2(e,k,j,z);
-						sum += grads_x1(e,k,j,z);
-					}
-				}
-			}
-			grads_u_mean[z] = -sum; 
-		}
+	// 	for(int z = 0; z<in_size.z; z++){
+	// 		float sum = 0;
+	// 		for(int e=0; e<grad_next_layer.size.m; e++){
+	// 			for(int k=0; k<in_size.x; k++){
+	// 				for(int j=0; j<in_size.y; j++){
+	// 					// grads_xmu2(e,k,j,z) = (1.0/out.size.m)*grads_var[z]*2*(in(e,k,j,z) - u_mean[z]);
+	// 					grads_xmu2(e,k,j,z) = (grads_var[z]*2*(in(e,k,j,z) - u_mean[z]))/(out.size.m*out.size.x*out.size.y);
+	// 					grads_x1(e,k,j,z) = grads_xmu1(e,k,j,z) + grads_xmu2(e,k,j,z);
+	// 					sum += grads_x1(e,k,j,z);
+	// 				}
+	// 			}
+	// 		}
+	// 		grads_u_mean[z] = -sum; 
+	// 	}
 
 		
-		for(int z = 0; z<in_size.z; z++){
-			for(int e=0; e<grad_next_layer.size.m; e++){
-				for(int k=0; k<in_size.x; k++){
-					for(int j=0; j<in_size.y; j++){
-						// grads_in(e,k,j,z) = grads_x1(e,k,j,z) + (1.0/out.size.m)*grads_u_mean[z];
-						grads_in(e,k,j,z) = grads_x1(e,k,j,z) + grads_u_mean[z]/(out.size.m*out.size.x*out.size.y);
-					}
-				}
-			}
-		}
+	// 	for(int z = 0; z<in_size.z; z++){
+	// 		for(int e=0; e<grad_next_layer.size.m; e++){
+	// 			for(int k=0; k<in_size.x; k++){
+	// 				for(int j=0; j<in_size.y; j++){
+	// 					// grads_in(e,k,j,z) = grads_x1(e,k,j,z) + (1.0/out.size.m)*grads_u_mean[z];
+	// 					grads_in(e,k,j,z) = grads_x1(e,k,j,z) + grads_u_mean[z]/(out.size.m*out.size.x*out.size.y);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
-		// if(debug)
-		// {
-		// 	cout<<"\n*********grads_in for batch_norm************\n";
-		// 	print_tensor(grads_in);
-		// }
+	// 	// if(debug)
+	// 	// {
+	// 	// 	cout<<"\n*********grads_in for batch_norm************\n";
+	// 	// 	print_tensor(grads_in);
+	// 	// }
 
-		return grads_in;	
-	}
+	// 	return grads_in;	
+	// }
 
-	void save_layer( json& model ){
-		model["layers"].push_back( {
-			{ "layer_type", "batch_norm2D" },
-			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
-			{ "clip_gradients", clip_gradients_flag}
-		} );
-	}
+	// void save_layer( json& model ){
+	// 	model["layers"].push_back( {
+	// 		{ "layer_type", "batch_norm2D" },
+	// 		{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
+	// 		{ "clip_gradients", clip_gradients_flag}
+	// 	} );
+	// }
 	
-	void save_layer_weight( string fileName ){
-		ofstream file(fileName);
-		json weights = {
-			{ "epsilon", epsilon },
-			{ "beta", beta },
-			{ "gamma", gamma }
-		};
-		file << weights;
-	}
+	// void save_layer_weight( string fileName ){
+	// 	ofstream file(fileName);
+	// 	json weights = {
+	// 		{ "epsilon", epsilon },
+	// 		{ "beta", beta },
+	// 		{ "gamma", gamma }
+	// 	};
+	// 	file << weights;
+	// }
 
-	void load_layer_weight(string fileName){
-		ifstream file(fileName);
-		json weights;
-		file >> weights;
-		this->epsilon = weights["epsilon"];
-		vector<float> beta = weights["beta"];
-		vector<float> gamma = weights["gamma"];
-		this->beta = beta;
-		this->gamma = gamma;
-		file.close();
-	}
+	// void load_layer_weight(string fileName){
+	// 	ifstream file(fileName);
+	// 	json weights;
+	// 	file >> weights;
+	// 	this->epsilon = weights["epsilon"];
+	// 	vector<float> beta = weights["beta"];
+	// 	vector<float> gamma = weights["gamma"];
+	// 	this->beta = beta;
+	// 	this->gamma = gamma;
+	// 	file.close();
+	// }
 
-	void print_layer(){
-		cout << "\n\n Batch Normalization Layer : \t";
-		cout << "\n\t in_size:\t";
-		print_tensor_size(in_size);
-		cout << "\n\t out_size:\t";
-		print_tensor_size(out_size);
-	}
+	// void print_layer(){
+	// 	cout << "\n\n Batch Normalization Layer : \t";
+	// 	cout << "\n\t in_size:\t";
+	// 	print_tensor_size(in_size);
+	// 	cout << "\n\t out_size:\t";
+	// 	print_tensor_size(out_size);
+	// }
 };
 #pragma pack(pop)
