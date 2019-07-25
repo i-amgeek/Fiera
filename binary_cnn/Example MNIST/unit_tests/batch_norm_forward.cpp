@@ -62,8 +62,6 @@ int main()
     else 
         cout << "Batch Norm not working correctly";
 
-        cout << "\n\n Input image";
-        print_tensor(layer->in);
         cout << "\n\n Expected output";
         print_tensor(expected_output);
         cout << "\n Actual output";

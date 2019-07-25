@@ -9,6 +9,7 @@
 #include "xtensor/xexpression.hpp"
 #include "xtensor/xadapt.hpp"
 #include "xtensor/xnoalias.hpp"
+/* #include "xtensor/xjson.hpp" */
 #include "xtensor-blas/xlinalg.hpp"
 #include <chrono>  // for high_resolution_clock
 #include "gradient_t.h"
@@ -27,3 +28,5 @@ using tensorg_1d = xtensor<gradient_t, 1>;
 using tensorg_2d = xtensor<gradient_t, 2>;
 using tensorg_3d = xtensor<gradient_t, 3>;
 using tensorg_4d = xtensor<gradient_t, 4>;
+
+/* print_options::set_precision(4); */

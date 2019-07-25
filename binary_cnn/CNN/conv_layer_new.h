@@ -103,7 +103,7 @@ struct conv_layer_t
     //         { "layer_type", "conv" },
     //         { "stride", stride },
     //         { "extend_filter", extend_filter },
-    //         { "number_filters", filters.size.m },
+    //         { "number_filters", filters.shape()[0] },
     //         { "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
     //         { "clip_gradients", clip_gradients_flag}
     //     } );
@@ -111,10 +111,11 @@ struct conv_layer_t
 
     // void save_layer_weight( string fileName ){
     //     ofstream file(fileName);
-    //     int m = filters.size.m;
-    //     int x = filters.size.x;
-    //     int y = filters.size.y;
-    //     int z = filters.size.z;
+
+    //     int m = filters.shape()[0];
+    //     int x = filters.shape()[1];
+    //     int y = filters.shape()[2];
+    //     int z = filters.shape()[3];
     //     int array_size = m*x*y*z;
         
     //     vector<float> data;
@@ -125,6 +126,7 @@ struct conv_layer_t
     //         { "size", array_size},
     //         { "data", data}
     //     };
+    //     xt::to_json(weights, data);
     //     file << weights << endl;
     //     file.close();
     // }
@@ -146,7 +148,7 @@ struct conv_layer_t
     //     cout << "\n\t in_size:\t";
     //     print_tensor_size(in_size);
     //     cout << "\n\t Filter Size:\t";
-    //     print_tensor_size(filters.size);
+    //     print_tensor_size(xt::adapt(filters.shape()));
     //     cout << "\n\t out_size:\t";
     //     print_tensor_size(out_size);
     // }

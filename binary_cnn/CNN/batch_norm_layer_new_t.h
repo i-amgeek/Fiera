@@ -6,8 +6,8 @@
 struct batch_norm_layer_t
 {
 	layer_type type = layer_type::batch_norm;
-	tensor_2d in;
-	tensor_2d in_hat,out;
+	tensor_4d in;
+	tensor_4d in_hat,out;
 	tdsize in_size, out_size;
 	float epsilon;
 	tensor_1d gamma, beta, u_mean, sigma;
@@ -26,11 +26,12 @@ struct batch_norm_layer_t
 	}
 
 	tensor_4d activate(tensor_4d& in, bool train = true){
+
 		if(train) {
 
 			this->in = in;
 		}
-
+			
 			u_mean = xt::mean(in, {0,2,3});
 
 			tensor_4d temp_diff = in - xt::reshape_view(u_mean, {1, in_size.z, 1, 1});
@@ -39,9 +40,10 @@ struct batch_norm_layer_t
 			if(in_size.m > 1 and adjust_variance)
 				sigma *= in_size.m / (in_size.m - 1);
 
-			in_hat = (in - u_mean) * 1.0 / xt::sqrt(sigma + epsilon);
-			out = gamma * in_hat + beta;
-			
+			in_hat = (in - xt::view(u_mean, newaxis(), all(), newaxis(), newaxis() )) / xt::view(xt::sqrt(sigma + epsilon), newaxis(), all(), newaxis(), newaxis() );
+
+
+			out = xt::view(gamma, newaxis(), all(), newaxis(), newaxis()) * in_hat + beta;
 			if(train) {
 				this->out = out;
 				this->in_hat = in_hat;
@@ -81,42 +83,42 @@ struct batch_norm_layer_t
 	// 	return grads_in;	
 	// }
 
-	// void save_layer( json& model ){
-	// 	model["layers"].push_back( {
-	// 		{ "layer_type", "batch_norm2D" },
-	// 		{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
-	// 		{ "clip_gradients", clip_gradients_flag}
-	// 	} );
-	// }
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "batch_norm2D" },
+			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
+	}
 	
-	// void save_layer_weight( string fileName ){
-	// 	ofstream file(fileName);
-	// 	json weights = {
-	// 		{ "epsilon", epsilon },
-	// 		{ "beta", beta },
-	// 		{ "gamma", gamma }
-	// 	};
-	// 	file << weights;
-	// }
+	void save_layer_weight( string fileName ){
+		ofstream file(fileName);
+		json weights = {
+			{ "epsilon", epsilon },
+			{ "beta", beta },
+			{ "gamma", gamma }
+		};
+		file << weights;
+	}
 
-	// void load_layer_weight(string fileName){
-	// 	ifstream file(fileName);
-	// 	json weights;
-	// 	file >> weights;
-	// 	this->epsilon = weights["epsilon"];
-	// 	vector<float> beta = weights["beta"];
-	// 	vector<float> gamma = weights["gamma"];
-	// 	this->beta = beta;
-	// 	this->gamma = gamma;
-	// 	file.close();
-	// }
+	void load_layer_weight(string fileName){
+		ifstream file(fileName);
+		json weights;
+		file >> weights;
+		this->epsilon = weights["epsilon"];
+		vector<float> beta = weights["beta"];
+		vector<float> gamma = weights["gamma"];
+		this->beta = beta;
+		this->gamma = gamma;
+		file.close();
+	}
 
-	// void print_layer(){
-	// 	cout << "\n\n Batch Normalization Layer : \t";
-	// 	cout << "\n\t in_size:\t";
-	// 	print_tensor_size(in_size);
-	// 	cout << "\n\t out_size:\t";
-	// 	print_tensor_size(out_size);
-	// }
+	void print_layer(){
+		cout << "\n\n Batch Normalization Layer : \t";
+		cout << "\n\t in_size:\t";
+		print_tensor_size(in_size);
+		cout << "\n\t out_size:\t";
+		print_tensor_size(out_size);
+	}
 };
 #pragma pack(pop)

@@ -78,11 +78,10 @@ struct batch_norm_layer_t
 		
 		tensor_t<float> out(in.size.m, in.size.x, in.size.y, in.size.z);
 		tensor_t<float> in_hat(in.size);
-
-        for(int e=0; e<in.size.z; e++){
-            for(int i=0; i<in.size.m; i++){
-                for(int j=0; j<in.size.x; j++){
-                    for(int k=0; k<in.size.y; k++){
+		for(int i=0; i<in.size.m; i++){
+			for(int e=0; e<in.size.z; e++){
+				for(int k=0; k<in.size.y; k++){
+					for(int j=0; j<in.size.x; j++){
 						in_hat(i,j,k,e) = (in(i,j,k,e)-u_mean[e])/sqrt(sigma[e]+epsilon);
                         out(i,j,k,e) = gamma[e]*(in_hat(i,j,k,e)) + beta[e];
                     }

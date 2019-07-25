@@ -52,15 +52,14 @@ int main()
     layer->epsilon = epsilon;
     layer->adjust_variance = false;
 
-    tensor_4d out layer->activate(temp_in, true); 
-    
+    tensor_4d out = layer->activate(temp_in, true); 
 
     // // if (out == expected_output) 
     // //     cout << "Batch Norm working correctly";
 
-    // cout << "\n\n Expected output";
-    // cout << expected_output;
-    // cout << "\n Actual output";
-    // cout << out;
+    cout << "\n Expected output \n";
+    cout << expected_output;
+    cout << "\n\n Actual output \n\n";
+    cout << out;
 
 }

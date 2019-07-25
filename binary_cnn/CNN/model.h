@@ -247,7 +247,6 @@ class Model{
 
                 else if (layerJ["layer_type"] == "prelu"){
                     prelu_layer_t * layer = new prelu_layer_t(in_size);
-                    layer->alpha = layerJ["alpha"];
                     layer->prelu_zero = layerJ["prelu_zero"];
                     layers.push_back((layer_t *) layer);
                     continue;
