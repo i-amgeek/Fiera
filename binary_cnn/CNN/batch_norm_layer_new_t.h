@@ -9,11 +9,12 @@ struct batch_norm_layer_t
 	tensor_4d temp_diff;
 	tensor_4d in_hat;
 	tdsize in_size, out_size;
-	float epsilon;
+	float epsilon, momentum;
 	tensor_1d gamma, beta, sqrt_sigma;
 	tensorg_1d grads_beta, grads_gamma;
     bool adjust_variance;
 	bool debug, clip_gradients_flag;
+	tensor_1d running_mean, running_var;
 
 	batch_norm_layer_t(tdsize in_size,bool clip_gradients_flag = true, bool debug_flag = false)
 	{
@@ -21,8 +22,11 @@ struct batch_norm_layer_t
 		this->out_size = in_size;
 		this->debug = debug_flag;
 		this->clip_gradients_flag = clip_gradients_flag;
-		epsilon = 1e-5;
-        adjust_variance = false;
+		this->epsilon = 1e-5;
+		this->momentum = 0.9;
+        this->adjust_variance = false;
+		this->running_mean = tensor_1d::from_shape({(uint)in_size.z});
+		this->running_var = tensor_1d::from_shape({(uint)in_size.z});
 	}
 
 	auto make1Dto4D(tensor_1d in){
@@ -31,23 +35,28 @@ struct batch_norm_layer_t
 
 	tensor_4d activate(tensor_4d& in, bool train = true){
 
-		tensor_1d u_mean = xt::mean(in, {0,2,3});
-		temp_diff = in - make1Dto4D(u_mean);
-		tensor_1d sigma = xt::mean(temp_diff * temp_diff, {0, 2, 3});
-
-		if(in_size.m > 1 and adjust_variance)
-			sigma *= in_size.m / (in_size.m - 1);
-
-		sqrt_sigma = xt::sqrt(sigma + epsilon);
-		in_hat = temp_diff / make1Dto4D(sqrt_sigma);
-		tensor_4d out = make1Dto4D(gamma) * in_hat + beta;
-
 		if(train) {
-			this->in_hat = in_hat;
-			this->temp_diff = temp_diff;
-			this->sqrt_sigma = sqrt_sigma;
+
+			tensor_1d u_mean = xt::mean(in, {0,2,3});
+			temp_diff = in - make1Dto4D(u_mean);
+			tensor_1d sigma = xt::mean(temp_diff * temp_diff, {0, 2, 3});
+
+			if(in_size.m > 1 and adjust_variance)
+				sigma *= in_size.m / (in_size.m - 1);
+
+			sqrt_sigma = xt::sqrt(sigma + epsilon);
+			in_hat = temp_diff / make1Dto4D(sqrt_sigma);
+			tensor_4d out = make1Dto4D(gamma) * in_hat + beta;
+
+			running_mean = momentum * running_mean + (1.0 - momentum) * u_mean;
+			running_var = momentum * running_var + (1.0 - momentum) * sigma;
+			return out;
 		}
-		return out;
+		else{
+			tensor_4d in_hat = (in - make1Dto4D(running_mean)) / make1Dto4D(xt::sqrt(running_var + epsilon));
+			tensor_4d out = gamma * in_hat + beta;
+			return out;
+		}
 	}
 	
 	
