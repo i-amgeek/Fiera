@@ -6,7 +6,9 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 add_compile_options("-Dusing_cmake")
 include_directories(CNN)
 
-add_executable(model Example\ MNIST/unit_tests/fc_forward_xtensor.cpp)
+add_executable(model Example\ MNIST/unit_tests/batch_norm_backward.cpp)
+add_executable(model_xtensor Example\ MNIST/unit_tests/batch_norm_forward_xtensor.cpp)
+
 
 find_package(xtl REQUIRED)
 find_package(xtensor REQUIRED)
@@ -24,9 +26,12 @@ message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
 message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
 
 target_link_libraries(model ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(model_xtensor ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 # add_library( model LIBRARIES/json.hpp )
+# add_library( model_xtensor LIBRARIES/json.hpp )
 if(MSVC)
     target_compile_options(model PRIVATE /EHsc /MP /bigobj)
+    target_compile_options(model_xtensor PRIVATE /EHsc /MP /bigobj)
     set(CMAKE_EXE_LINKER_FLAGS /MANIFEST:NO)
 endif()
 
@@ -34,6 +39,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
     (CMAKE_CXX_COMPILER_ID MATCHES "Intel" AND NOT WIN32))
     target_compile_options(model PRIVATE -march=native -g -fno-stack-protector -std=c++14)
+    target_compile_options(model_xtensor PRIVATE -march=native -g -fno-stack-protector -std=c++14)
 endif()
 
 target_link_libraries(model xtensor)
+target_link_libraries(model_xtensor xtensor)

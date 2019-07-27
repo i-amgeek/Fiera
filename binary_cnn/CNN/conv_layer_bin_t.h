@@ -2,7 +2,7 @@
 #include "layer_t.h"
 #include <climits>
 
-typedef unsigned int uint128_t __attribute__((mode(TI)));
+// typedef unsigned int uint128_t __attribute__((mode(TI)));
 
 struct packed_var{
 	tensor_t<uint64_t> packed_input, packed_weight;

@@ -48,4 +48,7 @@ struct gradient_t
 		this->grad = num;
 	}
 
+	
+	
+
 };

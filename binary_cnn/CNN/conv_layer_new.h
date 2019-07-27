@@ -80,23 +80,23 @@ struct conv_layer_t
     //     update_gradients( filter_grads );
     // }
 
-    // tensor_4d calc_grads( tensor_4d& grad_next_layer )
-    // {
-    //     int m = grads_next_layer.shape()[0];
-    //     int f = grads_next_layer.shape()[1];
+    tensor_4d calc_grads( tensor_4d& grad_next_layer )
+    {
+        int m = grads_next_layer.shape()[0];
+        int f = grads_next_layer.shape()[1];
 
-    //     tensor_3d grad_mul = transpose(grad_next_layer.reshape({m,f,-1}));
+        tensor_3d grad_mul = transpose(grad_next_layer.reshape({m,f,-1}));
 
-    //     tensor_2d grad_filters_col = linalg::dot(transpose(in_col), grad_mul);
+        tensor_2d grad_filters_col = linalg::dot(transpose(in_col), grad_mul);
 
-    //     tensor_3d grad_in_col = linalg::dot(grad_mul, filter_col);
+        tensor_3d grad_in_col = linalg::dot(grad_mul, filter_col);
 
-    //     tensor_4d grads_in = col2im_back(grad_in_col, grad_next_layer.shape(), in.shape());
+        tensor_4d grads_in = col2im_back(grad_in_col, grad_next_layer.shape(), in.shape());
 
-    //     tensor_4d filter_grads = grad_filters_col.reshape(filters.shape());
+        tensor_4d filter_grads = grad_filters_col.reshape(filters.shape());
         
-    //     return grads_in;
-    // }
+        return grads_in;
+    }   
 
     // void save_layer( json& model ){
     //     model["layers"].push_back( {

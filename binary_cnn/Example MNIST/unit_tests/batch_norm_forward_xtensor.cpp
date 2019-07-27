@@ -54,12 +54,14 @@ int main()
 
     tensor_4d out = layer->activate(temp_in, true); 
 
-    // // if (out == expected_output) 
-    // //     cout << "Batch Norm working correctly";
-
-    cout << "\n Expected output \n";
-    cout << expected_output;
-    cout << "\n\n Actual output \n\n";
-    cout << out;
+    if (xt::allclose(out, expected_output, 1e-2))
+        cout << "Batch Norm working correctly";
+    else{
+        cout << xt::isclose(out, expected_output, 1e-2);
+        cout << "\n Expected output \n";
+        cout << expected_output;
+        cout << "\n\n Actual output \n\n";
+        cout << out;
+    }
 
 }

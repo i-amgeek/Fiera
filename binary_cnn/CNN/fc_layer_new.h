@@ -53,14 +53,45 @@ struct fc_layer_t
 	
 	// Calculates backward propogation and saves result in `grads_in`. 
 	{
+		// cout<<grad_next_layer;
+		// cout<<weights;
+		// auto gnl_shape = transpose(grad_next_layer).shape();
 
-		weights_grad = linalg::dot(transpose(grad_next_layer), in);
-		tensor_2d grads_in = linalg::dot(grad_next_layer, weights );
+		// cout<<"gnl_shape: "<<endl;
+		// for (auto& el : gnl_shape) {std::cout << el << ", "; }
+
+		// cout<<endl;
+
+		// auto in_shape = in.shape();
+
+		// cout<<"in_shape: "<<endl;
+		// for (auto& el : in_shape) {std::cout << el << ", "; }
+
+		// cout<<endl;
+
+		// auto weights_shape = weights.shape();
+
+		// cout<<"weights_shape: "<<endl;
+		// for (auto& el : weights_shape) {std::cout << el << ", "; }
+
+		// cout<<endl;
+
+		tensor_2d temp_grads = transpose(grad_next_layer);
+		
+		/* this->weights_grad = linalg::dot(temp_grads, in); */
+        tensorg_2d abc = grad_next_layer;
+        /* cout << abc; */
+
+
+		tensor_2d grads_in = linalg::dot( grad_next_layer, weights );
+
+	    grads_in = eval(grads_in);
 		// if(debug)
 		// {
 		// 	cout<<"**********grads_in for float fc***********\n";
 		// 	print_tensor(grads_in);
 		// }
+		
 		return grads_in;	
 
 	}
