@@ -1,4 +1,5 @@
-#include "../tensor.hpp"
+#ifndef INC_IM2COL
+#define INC_IM2COL
 
 tensor_3d im2col(tensor_4d in, int hh, int ww, int stride){
 
@@ -45,18 +46,21 @@ tensor_4d col2im(tensor_3d mul, int h_prime, int w_prime ){
 }
 
 
-// tensor_3d col2im_back(dim_col,h_prime,w_prime,stride,hh,ww,c){
-//     int H = (h_prime - 1) * stride + hh;
-//     int W = (w_prime - 1) * stride + ww;
-//     int m = dim_col.shape()[0];
-//     tensor_4d grad_in = xt::zeros({m, c, H, W});
-//     for (int e=0; e<m; e++){
-//         for (int i=0; i< h_prime*w_prime; i++){
-//             tensor_3d row = dim_col({e, i, all()});
-//             int h_start = (i / w_prime) * stride;
-//             int w_start = (i % w_prime) * stride;
-//             xt::view(grad_in, e, all(), range(h_start,h_start+hh), range(w_start, w_start+ww)) = row.reshape({c,hh,ww});
-//     }
-//     }
-//     return grad_in;
-// }
+tensor_4d col2im_back(tensor_3d dim_col,int h_prime, int w_prime, int stride, int hh,int ww, int c){
+    int H = (h_prime - 1) * stride + hh;
+    int W = (w_prime - 1) * stride + ww;
+    int m = dim_col.shape()[0];
+    tensor_4d grad_in = xt::zeros<float>({m, c, H, W});
+    xarray<float> dim_col_arr = dim_col;
+    for (int e=0; e<m; e++){
+        for (int i=0; i< h_prime*w_prime; i++){
+            auto row = xt::view(dim_col_arr, e, i, all());
+            int h_start = int(i / w_prime) * stride;
+            int w_start = (i % w_prime) * stride;
+            xt::view(grad_in, e, all(), range(h_start,h_start+hh), range(w_start, w_start+ww)) += xt::reshape_view(row, {c,hh,ww});
+        }
+    }
+    return grad_in;
+}
+
+#endif //INC_IM2COL

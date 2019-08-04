@@ -2,16 +2,16 @@
 #include "tensor.hpp"
 #include "tensor_bin_t.h"
 #include "optimization_method.h"
-#include "fc_layer.h"
-// #include "fc_layer_new.h"
-#include "prelu_layer_t.h"
-#include "conv_layer_t.h"
+// #include "fc_layer.h"
+#include "fc_layer_new.h"
+#include "prelu_layer_new_t.h"
+#include "conv_layer_new_t.h"
 #include "conv_layer_bin_t.h"
-#include "fc_layer_bin.h"
-#include "scale_layer_t.h"
+// #include "fc_layer_bin.h"
+#include "scale_layer_new_t.h"
 #include "softmax_layer_t.h"
 #include "cross_entropy_layer_t.h"
-#include "batch_norm_layer_t.h"
+#include "batch_norm_layer_new_t.h"
 
 static tensor_t<float> calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 {

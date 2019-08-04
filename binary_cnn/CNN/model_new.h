@@ -10,7 +10,7 @@
 #include <chrono>  // for high_resolution_clock
 #include <sys/stat.h>
 #include "byteswap.h"
-#include "cnn.h"
+#include "cnn_new.h"
 
 using namespace std;
 #pragma pack(push, 1)
@@ -37,33 +37,34 @@ class Model{
             float n_learning_rate = learning_rate*pow(drop, floor((1+epoch)/epoch_drop)); 
             return n_learning_rate;
         }
-        void train( tensor_t<float> input, tensor_t<float> output, int batch_size, int epochs=1, float lr = 0.02, string optimizer="Momentum", string lr_schedule = "Step_decay", bool debug=false ){
+        void train( tensor_4d input, tensor_4d output, int batch_size, int epochs=1, float lr = 0.02, string optimizer="Momentum", string lr_schedule = "Step_decay", bool debug=false ){
         //TODO: Check layers are not empty
         
             
             this->epochs += epochs;
             this->batch_size = batch_size;
-            this->num_of_batches = input.size.m / batch_size ;
+            this->num_of_batches = input.shape()[0] / batch_size ;
             this->learning_rate = lr;
 
 
-            cout<<"Total images: " << input.size.m<<endl;
+            cout<<"Total images: " << input.shape()[0]<<endl;
             cout<<"batch_size: " << batch_size<<endl;
 
-            // tensor_t<float> input_batch =" input.get_batch(batch_size, 0);
-            // tensor_t<float> output_batch = output.get_batch(batch_size, 0);
             for ( int epoch = 0; epoch < epochs; ++epoch){
                 for(int batch_num = 0; batch_num<num_of_batches; batch_num++)
                 {
                     auto start = std::chrono::high_resolution_clock::now();
-                    tensor_t<float> input_batch = input.get_batch(batch_size, batch_num);
-                    tensor_t<float> output_batch = output.get_batch(batch_size, batch_num);
-                    tensor_t<float> out;
+
+                    int start_index = batch_num * batch_size;
+                    int end_index = start_index + batch_size;
+                    
+                    tensor_4d input_batch = xt::view(input, xt::range(start_index, end_index));
+                    tensor_4d labels_batch = xt::view(output, xt::range(start_index, end_index));
+                    tensor_4d out;
 
                     // Forward propogate
                     for ( int i = 0; i < layers.size(); i++ )
                     {
-
                         if ( i == 0 )
                             out = activate( layers[i], input_batch, true);
                         else
@@ -71,18 +72,18 @@ class Model{
                     }
 
                     // Calculate Loss
-                    this->loss = cross_entropy(out, output_batch, debug);
+                    this->loss = cross_entropy(out, labels_batch, debug);
                     
                     cout <<"loss for epoch: "<< epoch << "/" << epochs << " and batch: " << batch_num << "/" << num_of_batches << " is " << loss << endl;
                     // Backpropogation
-                    tensor_t<float> grads_in;
+                    tensor_4d grads_in;
 
                     for ( int i = layers.size() - 1; i >= 0; i-- )
                     {
                        // auto start = std::chrono::high_resolution_clock::now();
 
                         if ( i == layers.size() - 1 )
-                            grads_in = calc_grads( layers[i], output_batch);
+                            grads_in = calc_grads( layers[i], labels_batch);
                         else
                             grads_in = calc_grads( layers[i], grads_in );
                         
@@ -112,20 +113,17 @@ class Model{
             }
         }
 
-        tensor_t<float> predict(tensor_t<float> input_batch, bool measure_time=false){
+        tensor_t<float> predict(tensor_4d input_batch, bool measure_time=false){
 
-            tensor_t<float> out;
+            tensor_4d out;
             auto start = std::chrono::high_resolution_clock::now();
 
             for ( int i = 0; i < layers.size(); i++ )
             {
-                // cout<<"flag6 "<<layers.size()<<endl;
-                if ( i == 0 ){
+                if ( i == 0 )
                     out = activate( layers[i], input_batch, false);
-                }
-                else{
+                else
                     out = activate( layers[i], out, false);
-                }
             }
 
             if (measure_time)

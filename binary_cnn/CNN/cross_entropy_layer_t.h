@@ -8,31 +8,13 @@
 #include "gradient_t.h"
 #include "tensor_bin_t.h"
 using namespace std;
-float cross_entropy(tensor_t<float>& predicted ,tensor_t<float>& actual, bool debug=false){
-        int index;
-        tensor_t<float> temp(predicted.size.m, 1, 1, 1);
+float cross_entropy(tensor_2d& predicted ,tensor_2d& actual, bool debug=false){
         float cost = 0.0;
-        if(debug)
-        {
-            cout<<"***********predicted*********";
-            print_tensor(predicted);
+        int index;
+        int m = predicted.shape()[0]; 
+        tensor_1d target = xt::argmax(actual, 1);
 
-            cout<<"***********actual***********";
-            print_tensor(actual);
-        }
-
-        
-        for(int e=0; e < predicted.size.m; e++){
-            for ( int i = 0; i < predicted.size.x; i++ ){
-                if( int(actual(e,i, 0, 0)) == 1){
-                    index=i;
-                    break;
-                }	
-            }
-            temp(e,0,0,0) = (-log(predicted(e,index,0,0)));
-            cost += temp(e,0,0,0);
-        }
-        
-     
+        for(int e = 0; e < m; e++){
+            cost -= predicted(e, target(e));
         return cost;
     }

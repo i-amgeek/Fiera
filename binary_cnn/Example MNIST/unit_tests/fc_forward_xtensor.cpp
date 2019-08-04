@@ -17,14 +17,6 @@ int main()
         {{0.0000, 0.0000, 0.3510, 0.5182, 0.0000, 0.0000, 0.0000, 0.4201},
          {0.0000, 0.3114, 0.0000, 0.0000, 0.0045, 0.2879, 0.4376, 0.1286}};
 
-    temp_in.reshape({2,-1});
-
-    cout<<temp_in.shape;
-
-    // Can be reshaped like this
-    // xtensor<float, 2> b = xt::reshape_view(a, {20,2});
-
-// std::copy(temp_in.shape().cbegin(), temp_in.shape().cend(), std::ostream_iterator<size_t>(std::cout, " ")); // To print shape of xtensor
     tensor_2d weights 
        {{ 0.1558,  0.0148,  0.0896,  0.170},
         {-0.3019,  0.0659,  0.0488, -0.1747},
@@ -45,14 +37,13 @@ int main()
     layer->weights = weights;
     tensor_2d out = layer->activate(temp_in, 1);
 
-    // TODO: For this to work, override == operator of xtensor
-    // if (out == expected_output)
-    //     cout << "Fc Forward working correctly";
-
-    cout << "\nExpected output is\n";
-    cout << expected_output << endl;
-    cout << "\nActual output is\n";
-    cout << out;
-
+    if (xt::allclose(out, expected_output, 1e-2))
+        cout << "Fc Forward working correctly";
+    else{
+        cout << "\nExpected output is\n";
+        cout << expected_output << endl;
+        cout << "\nActual output is\n";
+        cout << out;
+    }
     return 0;
     }

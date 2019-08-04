@@ -30,12 +30,28 @@ void update_weight( tensor_2d& weights, tensorg_2d weights_grad, float multp, bo
 		}
 }
 
+void update_weight(tensor_4d& weights, tensorg_4d weights_grad, float multp, bool clip, float learning_rate){
+	int m = weights.shape()[0];
+	int c = weights.shape()[1];
+	int h = weights.shape()[2];
+	int w = weights.shape()[3];
+
+	for(int e=0; e<m; e++)
+		for(int z = 0; z<c; z++)
+		for (int i=0; i<h; i++)
+			for (int j=0; j<w; j++){
+				gradient_t& grad = weights_grad(e,z,i,j);
+				float m = grad.grad + grad.oldgrad * MOMENTUM;
+				weights(e,z,i,j) -= learning_rate * m * multp + learning_rate * WEIGHT_DECAY * w;
+			}
+}
+
 static void update_gradient( gradient_t& grad )
 {
 	grad.oldgrad = (grad.grad + grad.oldgrad * MOMENTUM);
 }
 
-static void update_gradient( tensorg_2d weights_grad){
+static void update_gradient( tensorg_2d& weights_grad){
 
 	int h = weights_grad.shape()[0];
 	int w = weights_grad.shape()[1];
@@ -45,6 +61,22 @@ static void update_gradient( tensorg_2d weights_grad){
 			gradient_t &w = weights_grad(i, j);
 			w.oldgrad = w.grad + w.oldgrad * MOMENTUM;
 		}
+}
+
+static void update_gradient( tensorg_4d& weights_grad){
+
+	int m = weights_grad.shape()[0];
+	int c = weights_grad.shape()[1];
+	int h = weights_grad.shape()[2];
+	int w = weights_grad.shape()[3];
+
+	for(int e=0; e<m; e++)
+		for(int z = 0; z<c; z++)
+			for (int i=0; i<h; i++)
+				for (int j=0; j<w; j++){
+					gradient_t &w = weights_grad(e,z,i, j);
+					w.oldgrad = w.grad + w.oldgrad * MOMENTUM;
+				}
 }
 
 void clip_gradients(bool chk, float & gradient_value){

@@ -38,28 +38,50 @@ int main()
     weights = eval(transpose(weights));
 
     tensor_2d grads_next_layer = {
-        { 0.0848,  0.1412,  0.1876, -0.4136},
-        {0.1340, -0.3696,  0.1203,  0.1153}};
+        {0.0848, -0.3588,  0.1876,  0.0864},
+        {-0.3660,  0.1304,  0.1203,  0.1153}};
 
-    tensor_2d expected_grads_in = {{ 0.176461, -0.075956, -0.099119, -0.097616,  0.059581,  0.007302,
-        -0.023461,  0.116235},
-        {-0.055739,  0.003485, -0.005231,  0.073852, -0.086417, -0.057697,
-        0.008643, -0.068283}};
+    tensor_2d expected_grads_in = {{-0.052139,  0.031144, -0.031169,  0.059484, -0.096869, -0.076348,
+   0.015489, -0.073215},
+ {-0.087639,  0.187585, -0.046781, -0.032198, -0.051517, -0.065747,
+   0.046043, -0.076833}};
 
     fc_layer_t * layer = new fc_layer_t( {2, 8}, {4, 1, 1, 1}, false);
+    
     layer->in = temp_in;
     layer->weights = weights;
-    // tensor_2d out = layer->activate(temp_in, 1);
 
     tensor_2d grads_in = layer->calc_grads(grads_next_layer);
-    // TODO: For this to work, override == operator of xtensor
-    // if (out == expected_output)
-    //     cout << "Fc Forward working correctly";
 
-    cout << "\nExpected grads_in is\n";
-    cout << expected_grads_in << endl;
-    cout << "\nActual grads_in is\n";
-    cout << grads_in;
+    layer->fix_weights(0.01);
+
+    tensor_2d expected_updated_weights{{ 0.329617, -0.279922,  0.270211, -0.062576,  0.181786,  0.138135,
+   0.014739,  0.066529},
+ { 0.273576,  0.095872,  0.186324, -0.274708,  0.251601,  0.121419,
+   0.089489,  0.048436},
+ { 0.17048 ,  0.322914, -0.077588, -0.195547, -0.088871, -0.215504,
+   0.170207, -0.174815},
+ {-0.189273,  0.304536,  0.324153,  0.04163 , -0.061116, -0.04565 ,
+   0.167565, -0.33025 }};
+
+    // cout<<"updated weights: \n"<<layer->weights;
+
+    if (xt::allclose(grads_in, expected_grads_in, 1e-2) and xt::allclose(layer->weights, expected_updated_weights, 1e-2))
+        cout << "Fc backward working correctly";
+    else{
+        // cout << xt::isclose(grads_in, expected_grads_in, 1e-2);
+        cout << "\nExpected grads_in is\n";
+        cout << expected_grads_in << endl;
+        cout << "\nActual grads_in is\n";
+        cout << grads_in<<endl;
+
+        cout << "\nExpected updated_weights is\n";
+        cout << expected_updated_weights << endl;
+        cout << "\nActual updated_weights is\n";
+        cout << layer->weights<<endl;
+
+
+    }
 
     return 0;
     }

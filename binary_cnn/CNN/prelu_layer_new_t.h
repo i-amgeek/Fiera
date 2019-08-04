@@ -63,39 +63,39 @@ struct prelu_layer_t
 
 		return out;
 	}
-	// void fix_weights(float learning_rate)
-	// {
-	// 	// grads_alpha contains sum of gradients of alphas for all examples. 
-	// 	// grads_alpha.grad /= out.size.m;
-	// 	alpha = update_weight(alpha,grads_alpha,1,false, learning_rate);
-	// 	update_gradient(grads_alpha);
+	void fix_weights(float learning_rate)
+	{
+		// grads_alpha contains sum of gradients of alphas for all examples. 
+		// grads_alpha.grad /= out.size.m;
+		update_weight(alpha,grads_alpha,1,false, learning_rate);
+		update_gradient(grads_alpha);
 		
-	// 	// if(debug)
-	// 	// {
-	// 	// 	cout<<"*******updated alpha for prelu*****\n";
-	// 	// 	cout<<alpha<<endl;
-	// 	// }
-	// }
+		// if(debug)
+		// {
+		// 	cout<<"*******updated alpha for prelu*****\n";
+		// 	cout<<alpha<<endl;
+		// }
+	}
 
-	// tensor_2d calc_grads( tensor_2d& grad_next_layer )
-	// {
-	// 	assert(in.size > 0);
+	tensor_2d calc_grads( tensor_2d& grad_next_layer )
+	{
+		assert(in.shape()[0] > 0);
 
-	// 	tensor_2d grads_in = xt::where(in > 0.0, grad_next_layer, grad_next_layer * prelu_zero);
+		tensor_2d grads_in = xt::where(in > 0.0, grad_next_layer, grad_next_layer * prelu_zero);
 
-	// 	auto mask = in < 0.0;
-	// 	grads_in(mask) = grad_next_layer(mask) * alpha;
-	// 	grads_alpha.grad = sum(grad_next_layer(mask) * in(mask));
+		// auto mask = in < 0.0;
+		// grads_in(mask) = grad_next_layer(mask) * alpha;
+		// grads_alpha.grad = sum(grad_next_layer(mask) * in(mask));
 		
-	// 	// if(debug)
-	// 	// {
-	// 	// 	cout<<"***********grads_in for prelu********\n";
-  	//     // 	print_tensor(grads_in);
-	// 	// 	cout<<"*********grad alpha***********\n";
-	// 	// 	cout<<grads_alpha.grad<<endl;
-	// 	// }
-	// 	return grads_in;
-	// }
+		// if(debug)
+		// {
+		// 	cout<<"***********grads_in for prelu********\n";
+  	    // 	print_tensor(grads_in);
+		// 	cout<<"*********grad alpha***********\n";
+		// 	cout<<grads_alpha.grad<<endl;
+		// }
+		return grads_in;
+	}
 
 	void save_layer( json& model ){
 		model["layers"].push_back( {
@@ -108,9 +108,9 @@ struct prelu_layer_t
 
 	void save_layer_weight( string fileName ){
 		ofstream file(fileName);
-		json j = {{"type", "prelu"},
+		json weight = {{"type", "prelu"},
 			  	  {"alpha", alpha}};
-		file << j;
+		file << weight;
 		file.close();
 	}
 
@@ -118,7 +118,7 @@ struct prelu_layer_t
 		ifstream file(fileName);
 		json weight;
 		file >> weight;
-		assert(weight(type) == "prelu");
+		assert(weight["type"] == "prelu");
 		alpha = weight["alpha"];
 	}
 	void print_layer(){

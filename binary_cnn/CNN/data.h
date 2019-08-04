@@ -4,8 +4,8 @@
 #pragma pack(push, 1)
 
 struct Data{
-    tensor_t<float> images;
-    tensor_t<float> labels;
+    tensor_4d images;
+    tensor_4d labels;
 
     void operator = (Data data){
 		images = data.images;

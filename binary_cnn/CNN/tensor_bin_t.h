@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef TENSOR_BIN_H_INCLUDED
+#define TENSOR_BIN_H_INCLUDED
+
 #include "point_t.h"
 #include <bitset>
 
@@ -101,3 +105,5 @@ static void print_tensor_bin( tensor_bin_t data )
 		}
 	}
 }
+
+#endif

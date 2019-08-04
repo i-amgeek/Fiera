@@ -6,8 +6,9 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 add_compile_options("-Dusing_cmake")
 include_directories(CNN)
 
-add_executable(model Example\ MNIST/unit_tests/batch_norm_backward.cpp)
-add_executable(model_xtensor Example\ MNIST/unit_tests/batch_norm_forward_xtensor.cpp)
+add_executable(model Example\ MNIST/unit_tests/batch_norm_forward_xtensor.cpp)
+add_executable(model_xtensor Example\ MNIST/full_test/implementation_check_mnist_pytorch.cpp)
+#add_executable(model_xtensor Example\ MNIST/unit_tests/conv_backward_xtensor.cpp)
 
 
 find_package(xtl REQUIRED)

@@ -25,13 +25,7 @@ struct scale_layer_t
     {
         if (train) this->in = in;
 
-        out = s_param * in;
-
-        // if(debug)
-        // {
-        //     cout<<"*****output for scale***********\n";
-        //     print_tensor(out);
-        // }
+        tensor_2d out = s_param * in;
 
         return out;
     }
@@ -42,32 +36,24 @@ struct scale_layer_t
 		s_param = update_weight(s_param,grads_scale,1,false, learning_rate);
 		update_gradient(grads_scale);
        
-        // if(debug)
-        // {
-        //     cout<<"*******updated s_param*****\n";
-		//     cout<<s_param<<endl;
-        // }
+        
     }
 
-    tensor_t<float> calc_grads(tensor_t<float>& grad_next_layer)
+    tensor_2d calc_grads(tensor_2d& grad_next_layer)
     {
-        assert(in.size > 0);
+        assert(in.shape()[0] > 0);
         grads_scale.grad = 0;
 
-        int m = grad_next_layer.size.m;
+        int m = grad_next_layer.shape()[0];
 
-        tensor_t<float> grads_in(m, out_size.x, 1, 1);
+        tensor_2d grads_in({m, out_size.x});
 
-        grads_scale.grad = sum( grad_next_layer * in );
+        tensor_2d temp = grad_next_layer * in;
+        xarray<float> tt = temp;
+
+        grads_scale.grad = (float)sum(temp)();
         grads_in = grad_next_layer * s_param;
-        // if(debug)
-        // {
-        //     cout<<"***********grads_in for scale********\n";
-        //     print_tensor(grads_in);
-        //     cout<<"***********gradient for s_param*******\n";
-        //     cout<<grads_scale.grad<<endl;
-        // }
-
+       
         return grads_in;
 
     }
