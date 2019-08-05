@@ -10,7 +10,7 @@
 using namespace std;
 int main()
 {
-    tensor_4d out_data
+    xarray<float> out_data
        {{{{ 0.1503,  0.0721},
           {-0.4510,  0.3723}},
 
@@ -25,7 +25,7 @@ int main()
           { 0.2774,  0.2570}}}};
 
     json weights;
-    tensor_4d in_data;
+    xarray<float> in_data;
 
     xt::to_json(weights["data"], out_data);
     ofstream fileO("test.weights");

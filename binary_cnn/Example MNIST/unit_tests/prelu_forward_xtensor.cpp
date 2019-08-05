@@ -12,7 +12,7 @@ using namespace std;
 
 int main()
 {
-    tensor_4d temp_in
+    xarray<float> temp_in
        {{{{ 0.1503,  0.0721},
           {-0.4510,  0.3723}},
 
@@ -26,7 +26,7 @@ int main()
          {{ 0.2511,  0.2050},
           { 0.2774,  0.2570}}}};
 
-    tensor_4d expected_output
+    xarray<float> expected_output
     {{{{ 0.1503  ,  0.0721  },
        {-0.02255 ,  0.3723  }},
 
@@ -41,7 +41,7 @@ int main()
        { 0.2774  ,  0.257   }}}};
 
     prelu_layer_t * layer = new prelu_layer_t( {2,2,2,2}, false);
-    tensor_4d out = layer->activate(temp_in, true);
+    xarray<float> out = layer->activate(temp_in, true);
 
     // if (out == expected_output) cout << "Prelu forward working correctly";
 

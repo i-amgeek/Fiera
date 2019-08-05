@@ -1,7 +1,7 @@
 #ifndef INC_IM2COL
 #define INC_IM2COL
 
-tensor_3d im2col(tensor_4d in, int hh, int ww, int stride){
+xarray<float> im2col(xarray<float> in, int hh, int ww, int stride){
 
     auto start = Clock::now();
     auto start_1 = Clock::now();
@@ -14,7 +14,7 @@ tensor_3d im2col(tensor_4d in, int hh, int ww, int stride){
     int w = in.shape()[3];    
     int new_h = (h-hh) / stride + 1;
     int new_w = (w-ww) / stride + 1;
-    tensor_3d col ({m, new_h*new_w, c*hh*ww});
+    auto col = xt::xarray<float>::from_shape({m, new_h*new_w, c*hh*ww});
     for (int e=0; e<m; e++){
         for (int i=0; i<new_h; i++){
             for (int j=0; j<new_w; j++){
@@ -30,10 +30,10 @@ tensor_3d im2col(tensor_4d in, int hh, int ww, int stride){
 }
 
 
-tensor_4d col2im(tensor_3d mul, int h_prime, int w_prime ){
+xarray<float> col2im(xarray<float> mul, int h_prime, int w_prime ){
     int m = mul.shape()[0];
     int F = mul.shape()[2];
-    tensor_4d out = zeros<float>({m, F, h_prime,w_prime});
+    auto out = xt::xarray<float>::from_shape({m, F, h_prime,w_prime});
     for (int e=0; e<m; e++){
         for (int i=0; i<F; i++){
             auto col = xt::view(mul, e, all(), i);
@@ -46,15 +46,15 @@ tensor_4d col2im(tensor_3d mul, int h_prime, int w_prime ){
 }
 
 
-tensor_4d col2im_back(tensor_3d dim_col,int h_prime, int w_prime, int stride, int hh,int ww, int c){
+xarray<float> col2im_back(xarray<float> dim_col,int h_prime, int w_prime, int stride, int hh,int ww, int c){
     int H = (h_prime - 1) * stride + hh;
     int W = (w_prime - 1) * stride + ww;
     int m = dim_col.shape()[0];
-    tensor_4d grad_in = xt::zeros<float>({m, c, H, W});
-    xarray<float> dim_col_arr = dim_col;
+    auto grad_in = xt::xarray<float>::from_shape({m, c, H, W});
+    // xarray<float> dim_col_arr = dim_col;
     for (int e=0; e<m; e++){
         for (int i=0; i< h_prime*w_prime; i++){
-            auto row = xt::view(dim_col_arr, e, i, all());
+            auto row = xt::view(dim_col, e, i, all());
             int h_start = int(i / w_prime) * stride;
             int w_start = (i % w_prime) * stride;
             xt::view(grad_in, e, all(), range(h_start,h_start+hh), range(w_start, w_start+ww)) += xt::reshape_view(row, {c,hh,ww});

@@ -7,6 +7,6 @@
 struct layer_t
 {
 	layer_type type;
-	tensor_2d in;
+	xarray<float> in;
 };
 #pragma pack(pop)

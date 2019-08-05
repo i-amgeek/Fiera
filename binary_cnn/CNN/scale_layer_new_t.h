@@ -5,7 +5,7 @@
 struct scale_layer_t
 {
     layer_type type = layer_type::scale;
-    tensor_2d in;
+    xarray<float> in;
     gradient_t grads_scale;
     tdsize in_size;
     tdsize out_size;
@@ -21,11 +21,11 @@ struct scale_layer_t
         this->clip_gradients_flag = clip_gradients_flag;
     }
 
-    tensor_2d activate(tensor_2d in, bool train)
+    xarray<float> activate(xarray<float> in, bool train)
     {
         if (train) this->in = in;
 
-        tensor_2d out = s_param * in;
+        xarray<float> out = s_param * in;
 
         return out;
     }
@@ -39,16 +39,16 @@ struct scale_layer_t
         
     }
 
-    tensor_2d calc_grads(tensor_2d& grad_next_layer)
+    xarray<float> calc_grads(xarray<float>& grad_next_layer)
     {
         assert(in.shape()[0] > 0);
         grads_scale.grad = 0;
 
         int m = grad_next_layer.shape()[0];
 
-        tensor_2d grads_in({m, out_size.x});
+        xarray<float> grads_in({m, out_size.x});
 
-        tensor_2d temp = grad_next_layer * in;
+        xarray<float> temp = grad_next_layer * in;
         xarray<float> tt = temp;
 
         grads_scale.grad = (float)sum(temp)();

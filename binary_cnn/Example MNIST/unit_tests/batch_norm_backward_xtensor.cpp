@@ -13,10 +13,10 @@ using namespace std;
 int main()
 {
 
-    tensor_1d gamma {0.7204, 0.0731}, beta {0,0};
+    xarray<float> gamma {0.7204, 0.0731}, beta {0,0};
     float epsilon;
     
-    tensor_4d temp_in
+    xarray<float> temp_in
         {{{{ 0.4083,  0.4021},
           {-0.0062, -0.0193}},
 
@@ -31,7 +31,7 @@ int main()
           { 0.0531,  0.8615}}}};
 
 
-    tensor_4d grad_next_layer
+    xarray<float> grad_next_layer
         {{{{-0.0521,  0.0311},
           {-0.0311,  0.0595}},
 
@@ -45,7 +45,7 @@ int main()
          {{-0.0515, -0.0657},
           { 0.0460, -0.0768}}}};
       
-    tensor_4d expected_output
+    xarray<float> expected_output
         {{{{-0.1536,  0.1855},
           {-0.1679,  0.1996}},
 
@@ -68,7 +68,7 @@ int main()
     layer->adjust_variance = false;
     layer->activate(temp_in, true); 
               
-    tensor_4d grads_in = layer->calc_grads(grad_next_layer);
+    xarray<float> grads_in = layer->calc_grads(grad_next_layer);
 
     if (xt::allclose(grads_in, expected_output, 1e-2*5))
       cout << "Batch Norm Backward working correctly\n";

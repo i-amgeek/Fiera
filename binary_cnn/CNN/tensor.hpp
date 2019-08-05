@@ -27,7 +27,7 @@ using json = nlohmann::json;
 
 using Clock = std::chrono::high_resolution_clock;
 using tensor_1d = xtensor<float, 1>;
-using tensor_2d = xtensor<float, 2>;
+using tensor_2d  = xtensor<float, 2>;
 using tensor_3d = xtensor<float, 3>;
 using tensor_4d = xtensor<float, 4>;
 

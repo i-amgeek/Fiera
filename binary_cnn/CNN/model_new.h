@@ -37,7 +37,7 @@ class Model{
             float n_learning_rate = learning_rate*pow(drop, floor((1+epoch)/epoch_drop)); 
             return n_learning_rate;
         }
-        void train( tensor_4d input, tensor_4d output, int batch_size, int epochs=1, float lr = 0.02, string optimizer="Momentum", string lr_schedule = "Step_decay", bool debug=false ){
+        void train( xarray<float> input, xarray<float> output, int batch_size, int epochs=1, float lr = 0.02, string optimizer="Momentum", string lr_schedule = "Step_decay", bool debug=false ){
         //TODO: Check layers are not empty
         
             
@@ -58,9 +58,9 @@ class Model{
                     int start_index = batch_num * batch_size;
                     int end_index = start_index + batch_size;
                     
-                    tensor_4d input_batch = xt::view(input, xt::range(start_index, end_index));
-                    tensor_4d labels_batch = xt::view(output, xt::range(start_index, end_index));
-                    tensor_4d out;
+                    xarray<float> input_batch = xt::view(input, xt::range(start_index, end_index));
+                    xarray<float> labels_batch = xt::view(output, xt::range(start_index, end_index));
+                    xarray<float> out;
 
                     // Forward propogate
                     for ( int i = 0; i < layers.size(); i++ )
@@ -76,7 +76,7 @@ class Model{
                     
                     cout <<"loss for epoch: "<< epoch << "/" << epochs << " and batch: " << batch_num << "/" << num_of_batches << " is " << loss << endl;
                     // Backpropogation
-                    tensor_4d grads_in;
+                    xarray<float> grads_in;
 
                     for ( int i = layers.size() - 1; i >= 0; i-- )
                     {
@@ -113,9 +113,9 @@ class Model{
             }
         }
 
-        tensor_t<float> predict(tensor_4d input_batch, bool measure_time=false){
+        xarray<float> predict(xarray<float> input_batch){
 
-            tensor_4d out;
+            xarray<float> out;
             auto start = std::chrono::high_resolution_clock::now();
 
             for ( int i = 0; i < layers.size(); i++ )
@@ -126,17 +126,12 @@ class Model{
                     out = activate( layers[i], out, false);
             }
 
-            if (measure_time)
-            {
-                auto finish = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed = finish - start;
-                std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-            }
+            
 
             return out;
         }
         
-        tensor_t<float> predict (string input_image){
+        xarray<float> predict (string input_image){
             // Takes path of input image (only .ppm currently) as input.
             struct stat buffer;   
             assert(stat (input_image.c_str(), &buffer) == 0);   // Checks if file exist
@@ -162,8 +157,8 @@ class Model{
 
                 RGB * rgb = (RGB*)usable;
 
-                tensor_t<float> image(1, 28, 28, 1);
-                tensor_t<float> output;
+                auto image = xt::xarray<float>::from_shape({1, 28, 28, 1});
+                xarray<float> output;
                 for ( int i = 0; i < 28; i++ )
                 {
                     for ( int j = 0; j < 28; j++ )
@@ -268,14 +263,20 @@ class Model{
                     continue;
                 }
 
-                else if (layerJ["layer_type"] == "fc_bin"){
-                    json outJ = layerJ["out_size"];
-                    tdsize out_size;
-                    out_size.from_json(outJ);
-                    fc_layer_bin_t * layer = new fc_layer_bin_t(in_size, out_size);
+                else if (layerJ["layer_type"] == "flatten"){
+                    flatten_t * layer = new flatten_t(in_size);
                     layers.push_back((layer_t *) layer);
                     continue;
                 }
+
+                // else if (layerJ["layer_type"] == "fc_bin"){
+                //     json outJ = layerJ["out_size"];
+                //     tdsize out_size;
+                //     out_size.from_json(outJ);
+                //     fc_layer_bin_t * layer = new fc_layer_bin_t(in_size, out_size);
+                //     layers.push_back((layer_t *) layer);
+                //     continue;
+                // }
 
                 else if (layerJ["layer_type"] == "scale"){
                     scale_layer_t * layer = new scale_layer_t(in_size);

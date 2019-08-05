@@ -13,11 +13,11 @@ using namespace std;
 int main()
 {
 
-    tensor_2d temp_in
+    xarray<float> temp_in
         {{0.0000, 0.0000, 0.3510, 0.5182, 0.0000, 0.0000, 0.0000, 0.4201},
          {0.0000, 0.3114, 0.0000, 0.0000, 0.0045, 0.2879, 0.4376, 0.1286}};
 
-    tensor_2d weights 
+    xarray<float> weights 
        {{ 0.1558,  0.0148,  0.0896,  0.170},
         {-0.3019,  0.0659,  0.0488, -0.1747},
         { 0.3323,  0.2685,  0.1723, -0.1887},
@@ -28,14 +28,14 @@ int main()
         { 0.1378,  0.1217, -0.2155, -0.0456}};
     
     weights = eval(transpose(weights));
-    tensor_2d expected_output =
+    xarray<float> expected_output =
        {{ 0.0308,  0.1925,  0.1382,  0.0727},
         {-0.0132,  0.0684, -0.1085, -0.0739}};
 
     fc_layer_t * layer = new fc_layer_t( {2, 8}, {4, 1, 1, 1}, false);
     layer->in = temp_in;
     layer->weights = weights;
-    tensor_2d out = layer->activate(temp_in, 1);
+    xarray<float> out = layer->activate(temp_in, 1);
 
     if (xt::allclose(out, expected_output, 1e-2))
         cout << "Fc Forward working correctly";

@@ -1,4 +1,4 @@
-// #include "../../CNN/model_new.h"
+#include "../../CNN/model_new.h"
 #include "../../CNN/Dataset/MNIST.h"
 #include"../../CNN/Dataset.h"
 
@@ -28,26 +28,29 @@ int main()
     prelu_layer_t * layer5p = new prelu_layer_t( layer5cb->out_size, false, false);
     batch_norm_layer_t * layer5b = new batch_norm_layer_t(layer5p->out_size);
 
+    flatten_t* layer6f = new flatten_t(layer5b->out_size);
+    
     fc_layer_t * layer6 = new fc_layer_t(layer5b->out_size, {-1, 10, 1, 1});
     softmax_layer_t * layer7 = new softmax_layer_t(layer6->out_size,false);
 
-    // layers.push_back((layer_t *) layer1c);
-    // layers.push_back((layer_t *) layer1p);
-    // layers.push_back((layer_t *) layer1b);
-    // layers.push_back((layer_t *) layer2cb);
-    // layers.push_back((layer_t *) layer2p);
-    // layers.push_back((layer_t *) layer2b);
-    // layers.push_back((layer_t *) layer3cb);
-    // layers.push_back((layer_t *) layer3p);
-    // layers.push_back((layer_t *) layer3b);
-    // layers.push_back((layer_t *) layer4cb);
-    // layers.push_back((layer_t *) layer4p);
-    // layers.push_back((layer_t *) layer4b);
-    // layers.push_back((layer_t *) layer5cb);
-    // layers.push_back((layer_t *) layer5p);
-    // layers.push_back((layer_t *) layer5b);
-    // layers.push_back((layer_t *) layer6);
-    // layers.push_back((layer_t *) layer7);
+    layers.push_back((layer_t *) layer1c);
+    layers.push_back((layer_t *) layer1p);
+    layers.push_back((layer_t *) layer1b);
+    layers.push_back((layer_t *) layer2cb);
+    layers.push_back((layer_t *) layer2p);
+    layers.push_back((layer_t *) layer2b);
+    layers.push_back((layer_t *) layer3cb);
+    layers.push_back((layer_t *) layer3p);
+    layers.push_back((layer_t *) layer3b);
+    layers.push_back((layer_t *) layer4cb);
+    layers.push_back((layer_t *) layer4p);
+    layers.push_back((layer_t *) layer4b);
+    layers.push_back((layer_t *) layer5cb);
+    layers.push_back((layer_t *) layer5p);
+    layers.push_back((layer_t *) layer5b);
+    layers.push_back((layer_t *) layer6f);
+    layers.push_back((layer_t *) layer6);
+    layers.push_back((layer_t *) layer7);
 
 
 
@@ -55,56 +58,24 @@ int main()
 
 
     
-    // // tensor_t<float>::ccount = 0;
-    // // tensor_t<float>::dcount = 0;
-    // Model model(layers);
-    // model.summary();
+    // tensor_t<float>::ccount = 0;
+    // tensor_t<float>::dcount = 0;
+    Model model(layers);
+    model.summary();
 
-    // string PATH="trained_models/big_binary_mnist_64x";
+    string PATH="trained_models/big_binary_mnist_64x";
 
-    // #ifdef using_cmake
-    // PATH="../Example\\ MNIST/full_test/trained_models/big_binary_mnist_64x";
-    // #endif
+    #ifdef using_cmake
+    PATH="../Example\\ MNIST/full_test/trained_models/big_binary_mnist_64x";
+    #endif
 
 
 
-    // Dataset data = load_mnist(90,10,0);
+    Dataset data = load_mnist(90,10,0);
     //         cout<<"flag2\n";
-    // // model.load("PATH");
+    // model.load("PATH");
 
-    // for(int ep = 0; ep<10; ep++){
-        
-    //     // float nlr = model.Step_decay(ep);
-
-    //     model.train(data.train.images, data.train.labels, 16, 1, 0.0001);
-
-    //     tensor_t<float> output = model.predict(data.test.images, 1);
-    //     int correct = 0;
-
-    //     for(int i=0; i<output.size.m; i++){
-    //         int idx,aidx;
-    //         float maxm = 0.0f;
-
-    //         for(int j=0; j<10; j++){
-    //             if(output(i,j,0,0)>maxm){
-    //                 maxm = output(i,j,0,0);
-    //                 idx = j;
-    //             }
-    //             if(int(data.test.labels(i,j,0,0))==1){
-    //                 aidx = j;
-    //             }
-    //         }
-    //         if(idx == aidx) correct++;
-    //         // cout<<"predicted: "<<idx<<" actual: "<<aidx<<endl;
-    //     }
-
-    //     cout<<"correct number is "<<correct<< " / " << output.size.m << endl;
-    //     cout<<"accuracy "<<correct/output.size.m<<endl;
-
-    // }
-   
-
-    // // model.train(data.train.images, data.train.labels, 56, 2, 0.0002);
+    model.train(data.train.images, data.train.labels, 56, 2, 0.0002);
     
     // model.save(PATH);
 

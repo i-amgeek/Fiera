@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.9)
 project(Fierra CXX)
-# set(CMAKE_CXX_FLAGS "-O3") Comment during debugging
+set(CMAKE_CXX_FLAGS "-O3") #Comment during debugging
 set(CMAKE_CXX_STANDARD 17)
+# SET(CMAKE_CXX_COMPILER /usr/bin/clang++)
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
 add_compile_options("-Dusing_cmake")
 include_directories(CNN)
 
 add_executable(model Example\ MNIST/unit_tests/batch_norm_forward_xtensor.cpp)
 add_executable(model_xtensor Example\ MNIST/full_test/implementation_check_mnist_pytorch.cpp)
-#add_executable(model_xtensor Example\ MNIST/unit_tests/conv_backward_xtensor.cpp)
+#add_executable(model_xtensor Example\ MNIST/unit_tests/xtensor_test.cpp)
 
 
 find_package(xtl REQUIRED)
@@ -39,8 +40,8 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
     (CMAKE_CXX_COMPILER_ID MATCHES "Intel" AND NOT WIN32))
-    target_compile_options(model PRIVATE -march=native -g -fno-stack-protector -std=c++14)
-    target_compile_options(model_xtensor PRIVATE -march=native -g -fno-stack-protector -std=c++14)
+    target_compile_options(model PRIVATE -march=native -fno-stack-protector -ffast-math -std=c++14)
+    target_compile_options(model_xtensor PRIVATE -march=native -fno-stack-protector -ffast-math -std=c++14)
 endif()
 
 target_link_libraries(model xtensor)

@@ -6,6 +6,7 @@ enum class layer_type
 	scale,
 	fc,
 	fc_bin,
+	flatten,
 	prelu,
 	pool,
 	dropout_layer,

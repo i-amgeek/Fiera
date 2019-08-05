@@ -12,7 +12,7 @@ using namespace std;
 
 int main()
 {
-    tensor_4d temp_in
+    xarray<float> temp_in
         {{{{-2.9662, -1.0606, -0.3090},
           { 0.9343, -0.3821, -1.1669},
           { 0.3636, -0.3156,  1.1450}},
@@ -30,7 +30,7 @@ int main()
           {-0.5577, -0.4383,  1.1572},
           { 0.0889,  0.2659, -0.1907}}}};
 
-    tensor_4d filters
+    xarray<float> filters
            {{{{ 0.0247, -0.2130},
               { 0.1126,  0.1109}},
 
@@ -43,7 +43,7 @@ int main()
              {{-0.1507, -0.2077},
               {-0.0388, -0.0995}}}};
               
-    tensor_4d expected_output
+    xarray<float> expected_output
        {{{{ 0.1503,  0.0721},
           {-0.4510,  0.3723}},
 
@@ -60,7 +60,7 @@ int main()
 
     conv_layer_t * layer = new conv_layer_t( 1, 2, 2, {2, 2, 3, 3}, false);
     layer->filters = filters;
-    tensor_4d out = layer->activate(temp_in, true);
+    xarray<float> out = layer->activate(temp_in, true);
     // if (out == expected_output) cout << "Convlayer forward working correctly";
 
     cout << "Expected output is\n";

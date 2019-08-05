@@ -18,7 +18,7 @@ int main()
     // tensor_t<float> temp_in(2, 3, 3, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2), grad_next_layer(2, 2, 2, 2);
     // std::vector<std::vector<std::vector<std::vector<float> > > > vect=
 
-    tensor_4d temp_in{{{{-0.0145, -0.3839, -2.9662},
+    xarray<float> temp_in{{{{-0.0145, -0.3839, -2.9662},
           {-1.0606, -0.3090,  0.9343},
           {-0.3821, -1.1669, -0.4375}},
 
@@ -38,7 +38,7 @@ int main()
     // cout<<"*********image*****\n\n";
     // print_tensor(temp_in);
 
-    tensor_4d grad_next_layer{{{{-1.5361e-01,  1.8545e-01},
+    xarray<float> grad_next_layer{{{{-1.5361e-01,  1.8545e-01},
           {-8.3970e-03,  9.9813e-03}},
 
          {{-6.4969e-04, -4.2289e-04},
@@ -55,7 +55,7 @@ int main()
       // cout<<"**********grad_next_layer**********\n";
       // print_tensor(grad_next_layer);
 
-    tensor_4d filters{{{{ 0.0247, -0.2130},
+    xarray<float> filters{{{{ 0.0247, -0.2130},
               { 0.1126,  0.1109}},
 
              {{-0.1890, -0.0530},
@@ -70,7 +70,7 @@ int main()
     // cout<<xt::sign(filters);
     // .from_vector(vect);
 
-  //  tensor_4d expected_output{{{{ 0.1503,  0.0721},
+  //  xarray<float> expected_output{{{{ 0.1503,  0.0721},
   //         {-0.4510,  0.3723}},
 
   //        {{ 0.3587, -0.3715},
@@ -90,11 +90,11 @@ int main()
     layer->in = temp_in;
     layer->filters = filters;
 
-    tensor_4d out = layer->activate(temp_in, true);
+    xarray<float> out = layer->activate(temp_in, true);
 
    
     
-    tensor_4d grads_in = layer->calc_grads(grad_next_layer);
+    xarray<float> grads_in = layer->calc_grads(grad_next_layer);
 
     // cout<<grads_in;
 }

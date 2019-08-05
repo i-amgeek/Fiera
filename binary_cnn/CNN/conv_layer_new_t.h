@@ -8,12 +8,12 @@
 struct conv_layer_t
 {
     layer_type type = layer_type::conv;
-    tensor_4d in;
-    tensor_4d filters; 
+    xarray<float> in;
+    xarray<float> filters; 
     tdsize in_size, out_size;
-    tensor_3d in_col;
+    xarray<float> in_col;
     xarray<float> filter_col;
-    tensorg_4d filter_grads;
+    xarray<gradient_t> filter_grads;
     uint16_t stride;
     uint16_t extend_filter, number_filters;
     bool debug, clip_gradients_flag;
@@ -21,7 +21,7 @@ struct conv_layer_t
     conv_layer_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size,bool clip_gradients_flag = true, bool debug_flag=false)
 
     {   
-        this->filters = eval(xt::random::rand<float>({(int)number_filters, (int)extend_filter, (int)extend_filter, in_size.z}, -1, 1));
+        this->filters = eval(xt::random::rand<float>({(int)number_filters,in_size.z, (int)extend_filter, (int)extend_filter}, -1, 1));
         this->number_filters = number_filters;
         this->debug=debug_flag;
         this->stride = stride;
@@ -39,12 +39,12 @@ struct conv_layer_t
 
     }
 
-    tensor_4d activate(tensor_4d& in, bool train)
+    xarray<float> activate(xarray<float>& in, bool train)
     {
         #ifdef measure_time
         auto start = Clock::now();
         #endif
-
+    
         if (train) this->in = in;
         int N = in.shape()[0];
         int C = in.shape()[1];
@@ -56,18 +56,19 @@ struct conv_layer_t
         int H_prime = (H-HH) / stride + 1;  // Height of `in` after im2col
         int W_prime = (W-WW) / stride + 1;  // Width of `in` after im2col
 
+
         in_col = im2col(in, HH, WW, stride);
         filter_col = filters;
         filter_col.reshape({F, -1});
         filter_col = transpose(filter_col);
 
-        tensor_3d mul = linalg::dot(in_col, filter_col);
-        tensor_4d out = col2im(mul, H_prime, W_prime);  
+        xarray<float> mul = linalg::dot(in_col, filter_col);
+        xarray<float> out = col2im(mul, H_prime, W_prime);  
 
         #ifdef measure_time
         auto finish = Clock::now();
 		std::chrono::duration<double> elipsed = finish - start;
-		cout << "Elipsed: "<< elipsed.count() << "s\n";
+		cout << "Conv_Float Forward Elipsed: "<< elipsed.count() << "s\n";
         #endif
 
         return out;
@@ -79,8 +80,12 @@ struct conv_layer_t
         update_gradient( filter_grads );
     }
 
-    tensor_4d calc_grads( tensor_4d& grad_next_layer )
+    xarray<float> calc_grads( xarray<float>& grad_next_layer )
     {
+         #ifdef measure_time
+        auto start = Clock::now();
+        #endif
+
         int m = grad_next_layer.shape()[0];
         int f = grad_next_layer.shape()[1];
         
@@ -88,18 +93,18 @@ struct conv_layer_t
         
         temp.reshape({m,f,-1});
 
-        tensor_3d dmul = transpose(temp, {0,2,1});
+        xarray<float> dmul = transpose(temp, {0,2,1});
         
-        tensor_3d dfilter_col({m, in_col.shape()[2], dmul.shape()[2] }),
-                    din_col({m, in_col.shape()[1], in_col.shape()[2]});
+        auto dfilter_col =  xt::xarray<float>::from_shape({m, in_col.shape()[2], dmul.shape()[2] }),
+                    din_col =  xt::xarray<float>::from_shape({m, in_col.shape()[1], in_col.shape()[2]});
 
-        tensor_4d tfilter_grads(filters.shape());
+        xarray<float> tfilter_grads(filters.shape());
 
         for(int i=0; i<m ;i++){
-            tensor_2d tarray1 =  xt::view(transpose(in_col, {0,2,1}), i, all(), all()),
+            xarray<float> tarray1 =  xt::view(transpose(in_col, {0,2,1}), i, all(), all()),
                          tarray2 = xt::view(dmul, i, all(), all());
             
-            tensor_2d dfilter_col = linalg::dot(tarray1,tarray2);
+            xarray<float> dfilter_col = linalg::dot(tarray1,tarray2);
             
             dfilter_col = transpose(dfilter_col);
 
@@ -110,10 +115,17 @@ struct conv_layer_t
             xt::view(din_col, i, all(), all()) = linalg::dot(tarray1, tarray2);
         }
 
-        tensor_4d grads_in = col2im_back(din_col, out_size.x, out_size.y, stride
+        xarray<float> grads_in = col2im_back(din_col, out_size.x, out_size.y, stride
                                         , filters.shape()[2], filters.shape()[3], filters.shape()[1]);
 
         filter_grads = convert_4d_float_to_gradient(tfilter_grads);
+        
+        #ifdef measure_time
+        auto finish = Clock::now();
+		std::chrono::duration<double> elipsed = finish - start;
+		cout << "Conv_Float Backward Elipsed: "<< elipsed.count() << "s\n";
+        #endif
+        
         return grads_in;
     }   
 

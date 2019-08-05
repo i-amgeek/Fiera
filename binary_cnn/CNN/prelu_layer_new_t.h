@@ -44,22 +44,22 @@ struct prelu_layer_t
 		this->clip_gradients_flag = clip_gradients_flag;
 	}
 
-	tensor_4d activate(tensor_4d& in, bool train)
+	xarray<float> activate(xarray<float>& in, bool train)
 
 	//  `activate` FORWARD PROPOGATES AND SAVES THE RESULT IN `out` VARIABLE.
 	{
+		#ifdef measure_time
+		auto start = Clock::now();
+		#endif
+
 		if (train) this->in = in;
-		tensor_4d out = xt::where(in < 0, in * alpha, in);
+		xarray<float> out = xt::where(in < 0, in * alpha, in);
 
-		return out;
-	}
-
-	tensor_2d activate(tensor_2d& in, bool train)
-
-	//  `activate` FORWARD PROPOGATES AND SAVES THE RESULT IN `out` VARIABLE.
-	{
-		if (train) this->in = in;
-		tensor_2d out = xt::where(in < 0, in * alpha, in);
+		#ifdef measure_time
+		auto finish = Clock::now();
+		std::chrono::duration<double> elipsed = finish - start;
+		cout << "PReLU Forward Elipsed: "<< elipsed.count() << "s\n";
+		#endif
 
 		return out;
 	}
@@ -77,23 +77,20 @@ struct prelu_layer_t
 		// }
 	}
 
-	tensor_2d calc_grads( tensor_2d& grad_next_layer )
+	xarray<float> calc_grads( xarray<float>& grad_next_layer )
 	{
+		#ifdef measure_time
+		auto start = Clock::now();
+		#endif
+
 		assert(in.shape()[0] > 0);
+		xarray<float> grads_in = xt::where(in > 0.0, grad_next_layer, grad_next_layer * prelu_zero);
 
-		tensor_2d grads_in = xt::where(in > 0.0, grad_next_layer, grad_next_layer * prelu_zero);
-
-		// auto mask = in < 0.0;
-		// grads_in(mask) = grad_next_layer(mask) * alpha;
-		// grads_alpha.grad = sum(grad_next_layer(mask) * in(mask));
-		
-		// if(debug)
-		// {
-		// 	cout<<"***********grads_in for prelu********\n";
-  	    // 	print_tensor(grads_in);
-		// 	cout<<"*********grad alpha***********\n";
-		// 	cout<<grads_alpha.grad<<endl;
-		// }
+		#ifdef measure_time
+		auto finish = Clock::now();
+		std::chrono::duration<double> elipsed = finish - start;
+		cout << "PReLU Backward Elipsed: "<< elipsed.count() << "s\n";
+		#endif
 		return grads_in;
 	}
 

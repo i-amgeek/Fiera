@@ -8,13 +8,15 @@
 #include "gradient_t.h"
 #include "tensor_bin_t.h"
 using namespace std;
-float cross_entropy(tensor_2d& predicted ,tensor_2d& actual, bool debug=false){
-        float cost = 0.0;
-        int index;
-        int m = predicted.shape()[0]; 
-        tensor_1d target = xt::argmax(actual, 1);
+float cross_entropy(xarray<float>& predicted ,xarray<float>& actual, bool debug=false){
+    float cost = 0.0;
+    int index;
+    int m = predicted.shape()[0]; 
+    auto target = xt::argmax(actual, 1);
 
-        for(int e = 0; e < m; e++){
-            cost -= predicted(e, target(e));
-        return cost;
+    for(int e = 0; e < m; e++){
+        cost -= predicted(e, target(e));
+    return -cost;
+
     }
+}

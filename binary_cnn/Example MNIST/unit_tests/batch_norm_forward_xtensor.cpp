@@ -12,10 +12,10 @@ using namespace std;
 
 int main()
 {
-    tensor_1d gamma {0.7204, 0.0731}, beta {0,0};
+    xarray<float> gamma {0.7204, 0.0731}, beta {0,0};
     float epsilon;
 
-    tensor_4d temp_in
+    xarray<float> temp_in
         {{{{ 0.4083,  0.4021},
           {-0.0062, -0.0193}},
 
@@ -29,7 +29,7 @@ int main()
          {{-0.0107,  0.5100},
           { 0.0531,  0.8615}}}};
 
-    tensor_4d expected_output
+    xarray<float> expected_output
         {{{{ 1.2540,  1.2287},
           {-0.4414, -0.4951}},
 
@@ -52,7 +52,7 @@ int main()
     layer->epsilon = epsilon;
     layer->adjust_variance = false;
 
-    tensor_4d out = layer->activate(temp_in, true); 
+    xarray<float> out = layer->activate(temp_in, true); 
 
     if (xt::allclose(out, expected_output, 1e-2))
         cout << "Batch Norm working correctly";

@@ -12,30 +12,37 @@
 struct fc_layer_t
 {
 	layer_type type = layer_type::fc;
-    tensor_2d in;
-	tensor_2d weights;
-	tensorg_2d weights_grad;
+    xarray<float> in;
+	xarray<float> weights;
+	xarray<gradient_t> weights_grad;
 	tdsize in_size, out_size;
 	bool train = false;
 	bool debug, clip_gradients_flag;
 
 	fc_layer_t( tdsize in_size, tdsize out_size,  bool clip_gradients_flag=false, bool debug_flag = false )
 	{
-		this->weights = eval(xt::random::rand<float>({out_size.x, in_size.x }, -1, 1));
+		this->weights = eval(xt::random::rand<float>({out_size.x, in_size.x * in_size.y * in_size.z }, -1, 1));
 		this->in_size = in_size;
 		this->out_size = out_size;
 		this->debug = debug_flag;
 		this->clip_gradients_flag = clip_gradients_flag;
 	}
 
-	tensor_2d activate( tensor_2d in, bool train )
+	xarray<float> activate( xarray<float> in, bool train )
 	{
-		if ( train ) this->in = in;  	// Only save `in` while training to save RAM during inference
+		#ifdef measure_time
 		auto start = Clock::now();
-		tensor_2d out = linalg::dot(in, transpose(this->weights));
+		#endif
+
+		if ( train ) this->in = in;  	// Only save `in` while training to save RAM during inference
+		xarray<float> out = linalg::dot(in, transpose(this->weights));
+
+		#ifdef measure_time
 		auto finish = Clock::now();
 		std::chrono::duration<double> elipsed = finish - start;
-		cout << "Elipsed: "<< elipsed.count() << "s\n";
+		cout << "FC Forward Elipsed: "<< elipsed.count() << "s\n";
+		#endif
+
 		return out;
 	}
 
@@ -43,30 +50,28 @@ struct fc_layer_t
 	{
 		update_weight( weights, weights_grad, 1, false, learning_rate );
 		update_gradient( weights_grad );
-		// if(debug)
-		// {
-		// 	cout<<"*******new weights for float fc*****\n";
-		// 	print_tensor(weights);
-		// }
 	}
 
-	tensor_2d calc_grads( tensor_2d& grad_next_layer )
+	xarray<float> calc_grads( xarray<float>& grad_next_layer )
 	
 	// Calculates backward propogation and saves result in `grads_in`. 
 	{
-		
-		tensor_2d temp_grads = linalg::dot(transpose(grad_next_layer), in);
+		#ifdef measure_time
+		auto start = Clock::now();
+		#endif
+			
+		xarray<float> temp_grads = linalg::dot(transpose(grad_next_layer), in);
 		this->weights_grad = convert_2d_float_to_gradient(temp_grads);
 
-		tensor_2d grads_in = linalg::dot( grad_next_layer, weights );
+		xarray<float> grads_in = linalg::dot( grad_next_layer, weights );
 
 	    grads_in = eval(grads_in);
-		// if(debug)
-		// {
-		// 	cout<<"**********grads_in for float fc***********\n";
-		// 	print_tensor(grads_in);
-		// }
 		
+		#ifdef measure_time
+		auto finish = Clock::now();
+		std::chrono::duration<double> elipsed = finish - start;
+		cout << "FC Backward Elipsed: "<< elipsed.count() << "s\n";
+		#endif
 		return grads_in;	
 
 	}

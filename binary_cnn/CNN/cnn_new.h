@@ -1,11 +1,12 @@
 #pragma once
-#include "tensor.hpp"
+// #include "tensor.hpp"
 #include "tensor_bin_t.h"
 #include "optimization_method.h"
 // #include "fc_layer.h"
 #include "fc_layer_new.h"
 #include "prelu_layer_new_t.h"
 #include "conv_layer_new_t.h"
+#include "flatten_t.h"
 #include "conv_layer_bin_t.h"
 // #include "fc_layer_bin.h"
 #include "scale_layer_new_t.h"
@@ -13,7 +14,7 @@
 #include "cross_entropy_layer_t.h"
 #include "batch_norm_layer_new_t.h"
 
-static tensor_t<float> calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
+static xarray<float> calc_grads( layer_t* layer, xarray<float>& grad_next_layer )
 {
 	switch ( layer->type )
 	{
@@ -25,14 +26,16 @@ static tensor_t<float> calc_grads( layer_t* layer, tensor_t<float>& grad_next_la
 			return ((conv_layer_bin_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::softmax:
 			return ((softmax_layer_t*)layer)->calc_grads( grad_next_layer );
-		case layer_type::fc_bin:
-			return ((fc_layer_bin_t*)layer)->calc_grads( grad_next_layer );
+		// case layer_type::fc_bin:
+			// return ((fc_layer_bin_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::batch_norm:
 			return ((batch_norm_layer_t *)layer)->calc_grads(grad_next_layer);
 		case layer_type::prelu:
 			return ((prelu_layer_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::fc:
 			return ((fc_layer_t*)layer)->calc_grads( grad_next_layer );
+		case layer_type::flatten:
+			return ((flatten_t*)layer)->calc_grads( grad_next_layer );
 		default:
 			assert( false );
 	}
@@ -57,21 +60,24 @@ static void fix_weights( layer_t* layer ,float learning_rate = 0.1)
 		case layer_type::fc:
 			((fc_layer_t*)layer)->fix_weights(learning_rate);
 			return;
-		case layer_type::fc_bin:
-			((fc_layer_bin_t *)layer)->fix_weights(learning_rate);
-			return;
+		// case layer_type::fc_bin:
+			// ((fc_layer_bin_t *)layer)->fix_weights(learning_rate);
+			// return;
 		case layer_type::batch_norm:
 			((batch_norm_layer_t *)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::softmax:
 			((softmax_layer_t*)layer)->fix_weights(learning_rate);
 			return;
+		case layer_type::flatten:
+			((flatten_t*)layer)->fix_weights(learning_rate);
+			return;
 		default:
 			assert( false );
 	}
 }
 
-static tensor_t<float> activate( layer_t* layer, tensor_t<float>& in, bool train)
+static xarray<float> activate( layer_t* layer, xarray<float>& in, bool train)
 {
 	switch (layer->type)
 	{
@@ -85,12 +91,14 @@ static tensor_t<float> activate( layer_t* layer, tensor_t<float>& in, bool train
 			return ((softmax_layer_t*)layer)->activate( in, train);
 		case layer_type::prelu:
 			return ((prelu_layer_t*)layer)->activate( in, train );
-		case layer_type::fc_bin:
-			return ((fc_layer_bin_t*)layer)->activate( in, train );
+		// case layer_type::fc_bin:
+			// return ((fc_layer_bin_t*)layer)->activate( in, train );
 		case layer_type::fc:
 			return ((fc_layer_t*)layer)->activate( in, train);
 		case layer_type::batch_norm:
 			return ((batch_norm_layer_t*)layer)->activate(in, train);
+		case layer_type::flatten:
+			return ((flatten_t*)layer)->activate(in);
 		default:
 			assert( false );
 	}
@@ -112,9 +120,9 @@ static void save_layer( layer_t* layer, json& model )
 		case layer_type::softmax:
 			((softmax_layer_t*)layer)->save_layer( model );
 			return;
-		case layer_type::fc_bin:
-			((fc_layer_bin_t*)layer)->save_layer( model );
-			return;
+		// case layer_type::fc_bin:
+			// ((fc_layer_bin_t*)layer)->save_layer( model );
+			// return;
 		case layer_type::batch_norm:
 			((batch_norm_layer_t *)layer)->save_layer( model );
 			return;
@@ -123,6 +131,9 @@ static void save_layer( layer_t* layer, json& model )
 			return;
 		case layer_type::fc:
 			((fc_layer_t*)layer)->save_layer( model );
+			return;
+		case layer_type::flatten:
+			((flatten_t*)layer)->save_layer( model );
 			return;
 		default:
 			assert( false );
@@ -145,9 +156,9 @@ static void save_layer_weight( layer_t* layer, string fileName )
 		case layer_type::softmax:
 			((softmax_layer_t*)layer)->save_layer_weight( fileName );
 			return;
-		case layer_type::fc_bin:
-			((fc_layer_bin_t*)layer)->save_layer_weight( fileName );
-			return;
+		// case layer_type::fc_bin:
+			// ((fc_layer_bin_t*)layer)->save_layer_weight( fileName );
+			// return;
 		case layer_type::batch_norm:
 			((batch_norm_layer_t *)layer)->save_layer_weight( fileName );
 			return;
@@ -156,6 +167,9 @@ static void save_layer_weight( layer_t* layer, string fileName )
 			return;
 		case layer_type::fc:
 			((fc_layer_t*)layer)->save_layer_weight( fileName );
+			return;
+		case layer_type::flatten:
+			((flatten_t*)layer)->save_layer_weight( fileName );
 			return;
 		default:
 			assert( false );
@@ -178,9 +192,9 @@ static void load_layer_weight( layer_t* layer, string fileName )
 		case layer_type::softmax:
 			((softmax_layer_t*)layer)->load_layer_weight( fileName );
 			return;
-		case layer_type::fc_bin:
-			((fc_layer_bin_t*)layer)->load_layer_weight( fileName );
-			return;
+		// case layer_type::fc_bin:
+			// ((fc_layer_bin_t*)layer)->load_layer_weight( fileName );
+			// return;
 		case layer_type::batch_norm:
 			((batch_norm_layer_t *)layer)->load_layer_weight( fileName );
 			return;
@@ -189,6 +203,9 @@ static void load_layer_weight( layer_t* layer, string fileName )
 			return;
 		case layer_type::fc:
 			((fc_layer_t*)layer)->load_layer_weight( fileName );
+			return;
+		case layer_type::flatten:
+			((flatten_t*)layer)->load_layer_weight( fileName );
 			return;
 		default:
 			assert( false );
@@ -210,9 +227,9 @@ static void print_layer( layer_t* layer )
 		case layer_type::softmax:
 			((softmax_layer_t*)layer)->print_layer();
 			return;
-		case layer_type::fc_bin:
-			((fc_layer_bin_t*)layer)->print_layer();
-			return;
+		// case layer_type::fc_bin:
+			// ((fc_layer_bin_t*)layer)->print_layer();
+			// return;
 		case layer_type::batch_norm:
 			((batch_norm_layer_t *)layer)->print_layer();
 			return;
@@ -221,6 +238,9 @@ static void print_layer( layer_t* layer )
 			return;
 		case layer_type::fc:
 			((fc_layer_t*)layer)->print_layer();
+			return;
+		case layer_type::flatten:
+			((flatten_t*)layer)->print_layer();
 			return;
 		default:
 			assert( false );
