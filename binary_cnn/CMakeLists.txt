@@ -40,8 +40,8 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
     (CMAKE_CXX_COMPILER_ID MATCHES "Intel" AND NOT WIN32))
-    target_compile_options(model PRIVATE -march=native -fno-stack-protector -ffast-math -std=c++14)
-    target_compile_options(model_xtensor PRIVATE -march=native -fno-stack-protector -ffast-math -std=c++14)
+    target_compile_options(model PRIVATE -march=native -Dmeasure_time -fno-stack-protector -ffast-math -std=c++14)
+    target_compile_options(model_xtensor PRIVATE -march=native -Dmeasure_time -funroll-loops -ftree-vectorize -fno-stack-protector -ffast-math -std=c++14)
 endif()
 
 target_link_libraries(model xtensor)

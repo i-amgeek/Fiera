@@ -14,7 +14,7 @@ xarray<float> im2col(xarray<float> in, int hh, int ww, int stride){
     int w = in.shape()[3];    
     int new_h = (h-hh) / stride + 1;
     int new_w = (w-ww) / stride + 1;
-    auto col = xt::xarray<float>::from_shape({m, new_h*new_w, c*hh*ww});
+    auto col = xt::xarray<float>::from_shape({(uint)m, (uint)new_h*new_w, (uint)c*hh*ww});
     for (int e=0; e<m; e++){
         for (int i=0; i<new_h; i++){
             for (int j=0; j<new_w; j++){
@@ -33,7 +33,7 @@ xarray<float> im2col(xarray<float> in, int hh, int ww, int stride){
 xarray<float> col2im(xarray<float> mul, int h_prime, int w_prime ){
     int m = mul.shape()[0];
     int F = mul.shape()[2];
-    auto out = xt::xarray<float>::from_shape({m, F, h_prime,w_prime});
+    auto out = xt::xarray<float>::from_shape({(uint)m, (uint)F, (uint)h_prime, (uint)w_prime});
     for (int e=0; e<m; e++){
         for (int i=0; i<F; i++){
             auto col = xt::view(mul, e, all(), i);
@@ -50,8 +50,7 @@ xarray<float> col2im_back(xarray<float> dim_col,int h_prime, int w_prime, int st
     int H = (h_prime - 1) * stride + hh;
     int W = (w_prime - 1) * stride + ww;
     int m = dim_col.shape()[0];
-    auto grad_in = xt::xarray<float>::from_shape({m, c, H, W});
-    // xarray<float> dim_col_arr = dim_col;
+    auto grad_in = xt::xarray<float>::from_shape({(uint)m, (uint)c,(uint) H, (uint)W});
     for (int e=0; e<m; e++){
         for (int i=0; i< h_prime*w_prime; i++){
             auto row = xt::view(dim_col, e, i, all());

@@ -12,7 +12,7 @@ int main()
     prelu_layer_t * layer1p = new prelu_layer_t( layer1c->out_size, false, false);
     batch_norm_layer_t * layer1b = new batch_norm_layer_t(layer1p->out_size);
 
-    conv_layer_bin_t * layer2cb = new conv_layer_bin_t(1,5,128,layer1b->out_size, false, false);
+    conv_layer_t * layer2cb = new conv_layer_t(1,5,128,layer1b->out_size, false, false);
     prelu_layer_t * layer2p = new prelu_layer_t( layer2cb->out_size, false, false);
     batch_norm_layer_t * layer2b = new batch_norm_layer_t(layer2p->out_size);
 
@@ -20,11 +20,11 @@ int main()
     prelu_layer_t * layer3p = new prelu_layer_t( layer3cb->out_size, false, false);
     batch_norm_layer_t * layer3b = new batch_norm_layer_t(layer3p->out_size);
     
-    conv_layer_bin_t * layer4cb = new conv_layer_bin_t(1,5,256,layer3b->out_size, false, false);
+    conv_layer_t * layer4cb = new conv_layer_t(1,5,256,layer3b->out_size, false, false);
     prelu_layer_t * layer4p = new prelu_layer_t( layer4cb->out_size, false, false);
     batch_norm_layer_t * layer4b = new batch_norm_layer_t(layer4p->out_size);
 
-    conv_layer_bin_t * layer5cb = new conv_layer_bin_t(1,5,128,layer4b->out_size, false, false);
+    conv_layer_t * layer5cb = new conv_layer_t(1,5,128,layer4b->out_size, false, false);
     prelu_layer_t * layer5p = new prelu_layer_t( layer5cb->out_size, false, false);
     batch_norm_layer_t * layer5b = new batch_norm_layer_t(layer5p->out_size);
 

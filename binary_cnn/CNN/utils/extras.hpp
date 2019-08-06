@@ -7,8 +7,8 @@
 xarray<gradient_t> convert_2d_float_to_gradient(xarray<float> input){
 
 
-    int nx = input.shape()[0];
-    int ny = input.shape()[1];
+    uint nx = input.shape()[0];
+    uint ny = input.shape()[1];
     auto temp = xt::xarray<gradient_t>::from_shape({nx,ny});
 
     for(int i=0; i<nx; i++)
@@ -22,10 +22,10 @@ xarray<gradient_t> convert_2d_float_to_gradient(xarray<float> input){
 xarray<gradient_t> convert_4d_float_to_gradient(xarray<float> input){
 
 
-    int nx = input.shape()[0];
-    int ny = input.shape()[1];
-    int h = input.shape()[2];
-    int w = input.shape()[3];
+    uint nx = input.shape()[0];
+    uint ny = input.shape()[1];
+    uint h = input.shape()[2];
+    uint w = input.shape()[3];
 
     auto temp = xt::xarray<gradient_t>::from_shape({nx,ny,h,w});
 

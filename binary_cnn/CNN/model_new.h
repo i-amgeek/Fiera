@@ -75,22 +75,18 @@ class Model{
                     this->loss = cross_entropy(out, labels_batch, debug);
                     
                     cout <<"loss for epoch: "<< epoch << "/" << epochs << " and batch: " << batch_num << "/" << num_of_batches << " is " << loss << endl;
+
                     // Backpropogation
                     xarray<float> grads_in;
 
                     for ( int i = layers.size() - 1; i >= 0; i-- )
                     {
-                       // auto start = std::chrono::high_resolution_clock::now();
 
                         if ( i == layers.size() - 1 )
                             grads_in = calc_grads( layers[i], labels_batch);
                         else
                             grads_in = calc_grads( layers[i], grads_in );
                         
-                       // cout<<"For layer "<<i<<" backward pass"<<endl;
-                        // auto finish = std::chrono::high_resolution_clock::now();
-                        // std::chrono::duration<double> elapsed = finish - start;
-                        // std::cout << "Elapsed time: " << elapsed.count() << " s\n";
                      }
                     
                     float n_lr;
@@ -103,8 +99,8 @@ class Model{
                     // Update weights
                     for ( int i = 0; i < layers.size(); i++ )
                         fix_weights( layers[i], n_lr);
-
-                    if (!(batch_num % 10)){ 
+                    
+                    if (!(batch_num%10)){ 
                         auto finish = std::chrono::high_resolution_clock::now();
                         std::chrono::duration<double> elapsed = finish - start;
                         cout << "Estimated time: " << elapsed.count() / 60.0 * ((num_of_batches - batch_num + 1) + num_of_batches * (epochs - epoch + 1)) <<" minutes" << endl;

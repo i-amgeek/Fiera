@@ -39,30 +39,29 @@ struct conv_layer_t
 
     }
 
-    xarray<float> activate(xarray<float>& in, bool train)
+    xarray<float> activate(const xarray<float>& in, bool train)
     {
         #ifdef measure_time
         auto start = Clock::now();
         #endif
     
         if (train) this->in = in;
-        int N = in.shape()[0];
-        int C = in.shape()[1];
-        int H = in.shape()[2];
-        int W = in.shape()[3];
+        uint N = in.shape()[0];
+        uint C = in.shape()[1];
+        uint H = in.shape()[2];
+        uint W = in.shape()[3];
         int F = filters.shape()[0];
-        int HH = filters.shape()[2];
-        int WW = filters.shape()[3];
-        int H_prime = (H-HH) / stride + 1;  // Height of `in` after im2col
-        int W_prime = (W-WW) / stride + 1;  // Width of `in` after im2col
+        uint HH = filters.shape()[2];
+        uint WW = filters.shape()[3];
+        uint H_prime = (H-HH) / stride + 1;  // Height of `in` after im2col
+        uint W_prime = (W-WW) / stride + 1;  // Width of `in` after im2col
 
 
         in_col = im2col(in, HH, WW, stride);
         filter_col = filters;
         filter_col.reshape({F, -1});
-        filter_col = transpose(filter_col);
 
-        xarray<float> mul = linalg::dot(in_col, filter_col);
+        xarray<float> mul = linalg::dot(in_col, transpose(filter_col));
         xarray<float> out = col2im(mul, H_prime, W_prime);  
 
         #ifdef measure_time
@@ -88,36 +87,26 @@ struct conv_layer_t
 
         int m = grad_next_layer.shape()[0];
         int f = grad_next_layer.shape()[1];
-        
-        xarray<float> temp = grad_next_layer;
-        
-        temp.reshape({m,f,-1});
+        int H_prime = in_col.shape()[1];
+        int W_prime = in_col.shape()[2];
+        int C = filters.shape()[1];
+        int HH = filters.shape()[2];
+        int WW = filters.shape()[3];
 
-        xarray<float> dmul = transpose(temp, {0,2,1});
-        
-        auto dfilter_col =  xt::xarray<float>::from_shape({m, in_col.shape()[2], dmul.shape()[2] }),
-                    din_col =  xt::xarray<float>::from_shape({m, in_col.shape()[1], in_col.shape()[2]});
-
-        xarray<float> tfilter_grads(filters.shape());
+        grad_next_layer.reshape({m,f,-1});
+        xarray<float> mul_grad = transpose(grad_next_layer, {0,2,1}),
+                      in_col_grad =  xt::xarray<float>::from_shape({(uint)m, (uint)H_prime, (uint)W_prime}),
+                      tfilter_grads(filters.shape());
 
         for(int i=0; i<m ;i++){
-            xarray<float> tarray1 =  xt::view(transpose(in_col, {0,2,1}), i, all(), all()),
-                         tarray2 = xt::view(dmul, i, all(), all());
-            
-            xarray<float> dfilter_col = linalg::dot(tarray1,tarray2);
-            
-            dfilter_col = transpose(dfilter_col);
-
-            tfilter_grads += xt::reshape_view(dfilter_col, filters.shape());
-            tarray1 = xt::view(dmul, i, all(), all());
-            tarray2 = transpose(filter_col);
-
-            xt::view(din_col, i, all(), all()) = linalg::dot(tarray1, tarray2);
+            xarray<float> in_col_temp =  xt::view(transpose(in_col, {0,2,1}), i, all(), all()),
+                          mul_grad_temp = xt::view( mul_grad, i, all(), all());
+            xarray<float> dfilter_col = linalg::dot(  in_col_temp,  mul_grad_temp);
+            tfilter_grads += xt::reshape_view(transpose(dfilter_col), filters.shape());
+            xt::view( in_col_grad, i, all(), all()) = linalg::dot(  mul_grad_temp, filter_col);
         }
 
-        xarray<float> grads_in = col2im_back(din_col, out_size.x, out_size.y, stride
-                                        , filters.shape()[2], filters.shape()[3], filters.shape()[1]);
-
+        xarray<float> grads_in = col2im_back(in_col_grad, out_size.x, out_size.y, stride, HH, WW, C);
         filter_grads = convert_4d_float_to_gradient(tfilter_grads);
         
         #ifdef measure_time
@@ -128,6 +117,10 @@ struct conv_layer_t
         
         return grads_in;
     }   
+
+    inline auto access(xarray<float> in, int i){
+        return xt::view(in, i, all(), all());
+    }
 
     void save_layer( json& model ){
         model["layers"].push_back( {

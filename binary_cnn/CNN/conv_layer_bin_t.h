@@ -138,7 +138,7 @@ struct conv_layer_bin_t
 		for(int example = 0; example<packed_input.shape()[0]; example++){
 			for ( int filter = 0; filter < packed_weight.shape()[0]; filter++ )
 				for ( int x = 0; x < out.shape()[2]; x++ )
-					for ( int y = 0; y < out.shape()[3]; y++ ){
+					for ( int y = 0; y < out.shape()[3]; y++){
 
 						point_t mapped = map_to_input( { 0, (uint16_t)x, (uint16_t)y, 0 }, 0 );
 						float sum = 0, sum2 = 0;
@@ -232,7 +232,7 @@ struct conv_layer_bin_t
 		xarray<float> grads_in = col2im_back(din_col, out_size.x, out_size.y, stride, filters.shape()[2], filters.shape()[3], filters.shape()[1]);
 
 
-		grads_in = xt::where(in>-1 && in<1, grads_in, 0);
+		grads_in = xt::where(in> -1 && in<1, grads_in, 0);
         filter_grads = convert_4d_float_to_gradient(tfilter_grads);
 
 		

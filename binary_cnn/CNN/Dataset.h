@@ -10,7 +10,7 @@ struct Dataset
 	Data test;
 	Data validation;
 
-	Dataset(int ntrain, int ntest, int nval, int nout, int img_w, int img_h, int img_c){
+	Dataset(uint ntrain, uint ntest, uint nval, uint nout, uint img_w, uint img_h, uint img_c){
 		train.images = xt::xarray<float>::from_shape({ntrain, img_c, img_w, img_h});
 		train.labels = xt::xarray<float>::from_shape({ntrain, nout, 1, 1});
 		test.images = xt::xarray<float>::from_shape({ntest, img_c, img_w, img_h});
